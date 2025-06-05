@@ -1,3 +1,4 @@
 chainlens-free/
 chainlens-free/
 node_modules/
+*.log
