@@ -1,0 +1,25 @@
+.env
+# Build artifacts
+artifacts/
+cache/
+backend/__pycache__/
+frontend/.next
+frontend/dist
+frontend/build
+
+# Logs
+*.log
+
+# Environment specific files
+.env.local
+.env.production
+.env.development
+
+# Dependencies
+node_modules/
+backend/venv/
+backend/venv*/
+
+# OS generated files
+.DS_Store
+Thumbs.db

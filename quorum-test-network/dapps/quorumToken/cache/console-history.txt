@@ -1,8 +1,0 @@
-const provider = new ethers.providers.Web3Provider(window.ethereum);
-console.log("Proprietário do contrato:", owner);
-const owner = await contrato.owner();
-const contrato = await ethers.getContractAt("TicketNFT", "0x9a3DBCa554e9f6b9257aAa24010DA8377C57c17e");
-accounts.map(async (acc, i) => {  console.log(`Conta ${i}: ${acc.address} | Saldo:`, (await acc.provider.getBalance(acc.address)).toString());});
-const accounts = await ethers.getSigners();
-sender.address
-const [sender] = await ethers.getSigners();

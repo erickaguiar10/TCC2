@@ -1,35 +1,44 @@
 {
-  "name": "quorumToken",
+  "name": "quorum-token-dapp",
   "version": "1.0.0",
+  "description": "A ticket sales DApp integrated with Quorum blockchain",
   "main": "index.js",
-  "license": "MIT",
   "scripts": {
+    "start": "node proxy.js",
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "backend": "cd backend && python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload",
+    "frontend": "cd frontend && npm run dev",
+    "proxy": "node proxy.js",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "cd backend && pip install -r requirements.txt",
+    "build:frontend": "cd frontend && npm run build",
+    "copy-abi": "npx copyfiles -u 1 \"./abis/*.json\" \"./backend/\" \"./frontend/src/\"",
+    "test": "npx hardhat test --network hardhat",
     "compile": "npx hardhat compile",
-    "test": "npx hardhat test",
-    "deploy-quorumtoken": "npx hardhat run ./scripts/deploy_quorumtoken.ts --network quickstart "
+    "deploy": "npx hardhat run scripts/deploy.js --network localhost"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.9.3",
-    "fp-ts": "^2.16.10"
+    "@openzeppelin/contracts": "^5.4.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "http-proxy-middleware": "^3.0.5"
   },
   "devDependencies": {
-    "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",
-    "@nomicfoundation/hardhat-ethers": "^3.0.0",
-    "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
-    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
-    "@nomicfoundation/hardhat-verify": "^1.0.0",
-    "@typechain/ethers-v6": "^0.4.0",
-    "@typechain/hardhat": "^8.0.0",
-    "@types/chai": "^4.2.0",
-    "@types/mocha": ">=9.1.0",
-    "@types/node": ">=16.0.0",
-    "chai": "^4.2.0",
-    "ethers": "6.7.1",
-    "hardhat": "^2.24.1",
-    "hardhat-gas-reporter": "^1.0.8",
-    "solidity-coverage": "^0.8.0",
-    "ts-node": ">=8.0.0",
-    "typechain": "^8.1.0",
-    "typescript": ">=4.5.0"
-  }
+    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
+    "concurrently": "^8.2.2",
+    "copyfiles": "^2.4.1",
+    "hardhat": "^2.26.3"
+  },
+  "keywords": [
+    "blockchain",
+    "ethereum",
+    "quorum",
+    "dapp",
+    "ticket",
+    "nft",
+    "solidity"
+  ],
+  "author": "QuorumToken DApp",
+  "license": "MIT"
 }

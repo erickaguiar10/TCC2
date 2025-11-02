@@ -1,0 +1,2 @@
+{"timestamp":"2025-09-03 23:57:18,659","container":"1aac69dc68e8","level":"INFO","thread":"main","class":"c.q.t.e.EnclaveFactoryImpl","logger":"c.q.t.enclave.EnclaveFactoryImpl","message":"Creating enclave","throwable":""}
+{"timestamp":"2025-09-03 23:57:18,769","container":"1aac69dc68e8","level":"INFO","thread":"main","class":"c.q.t.e.EnclaveFactoryImpl","logger":"c.q.t.enclave.EnclaveFactoryImpl","message":"Creating enclave server","throwable":""}
