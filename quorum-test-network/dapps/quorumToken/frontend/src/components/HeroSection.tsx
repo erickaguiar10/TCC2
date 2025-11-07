@@ -1,6 +1,7 @@
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Search, Shield, Lock, Zap } from "lucide-react";
+import heroBanner from "../assets/hero-banner.jpg";
 
 const HeroSection = () => {
   return (
@@ -9,7 +10,7 @@ const HeroSection = () => {
       <div className="absolute inset-0">
         <img 
           alt="TicketMain Hero"
-          src="../assents/hero.jpg"
+          src={heroBanner}
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-hero opacity-85"></div>
@@ -54,7 +55,7 @@ const HeroSection = () => {
           </div>
           <div className="flex items-center space-x-2 text-white/80">
             <Zap className="h-5 w-5 text-accent" />
-            <span className="font-medium">Compra Instantânea</span>
+            <span className="font-medium">Compra Garantida</span>
           </div>
         </div>
         

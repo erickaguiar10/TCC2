@@ -28,11 +28,15 @@ with open(abi_path) as f:
 
 contract = w3.eth.contract(address=contract_address, abi=abi)
 
-print("✅ Conectado ao contrato:", contract_address)
+print("Conectado ao contrato:", contract_address)
 
 def get_owner():
     """Obtém o dono do contrato"""
-    return contract.functions.owner().call()
+    try:
+        return contract.functions.owner().call()
+    except Exception as e:
+        print(f"Erro ao obter owner: {str(e)}")
+        raise e
 
 def get_total_supply():
     """Obtém o número total de ingressos"""

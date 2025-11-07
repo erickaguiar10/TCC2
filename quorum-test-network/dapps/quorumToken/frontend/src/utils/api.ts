@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "https://congenial-parakeet-56xwvj4j4j37jw6-8000.app.github.dev";
+const API_BASE_URL = "http://localhost:8000";
 
 // 🧩 Cria a instância base do axios
 export const apiteste = axios.create({
@@ -100,70 +100,45 @@ export const api = {
   getTicketsByOwner: (ownerAddress: string) => 
     apiClient.get(`/tickets/owner/${ownerAddress}`),
   
-  // Deprecated: Criar ingresso (apenas owner) - Use createTicketDirect instead
-  // WARNING: This method sends private keys to the backend which is a security risk
+  // Criar ingresso (apenas owner) - Novo formato
   createTicket: (
     eventName: string, 
     price: number, 
-    eventDate: number,
-    fromAccount: string,
-    privateKey: string
+    eventDate: number
   ) => 
-    apiClient.post('/ticket/create', null, {
-      params: {
-        event_name: eventName,
-        price,
-        event_date: eventDate,
-        from_account: fromAccount,
-        private_key: privateKey
-      }
+    apiClient.post('/ticket/create', {
+      event_name: eventName,
+      price,
+      event_date: eventDate
     }),
   
-  // Deprecated: Comprar ingresso - Use buyTicketDirect instead
-  // WARNING: This method sends private keys to the backend which is a security risk
+  // Comprar ingresso - Novo formato
   buyTicket: (
     tokenId: number,
-    value: number,
-    fromAccount: string,
-    privateKey: string
+    value: number
   ) => 
-    apiClient.post(`/ticket/${tokenId}/buy`, null, {
-      params: {
-        value,
-        from_account: fromAccount,
-        private_key: privateKey
-      }
+    apiClient.post(`/ticket/${tokenId}/buy`, {
+      token_id: tokenId,
+      value
     }),
   
-  // Deprecated: Revender ingresso - Use resellTicketDirect instead
-  // WARNING: This method sends private keys to the backend which is a security risk
+  // Revender ingresso - Novo formato
   resellTicket: (
     tokenId: number,
-    newPrice: number,
-    fromAccount: string,
-    privateKey: string
+    newPrice: number
   ) => 
-    apiClient.post(`/ticket/${tokenId}/resell`, null, {
-      params: {
-        new_price: newPrice,
-        from_account: fromAccount,
-        private_key: privateKey
-      }
+    apiClient.post(`/ticket/${tokenId}/resell`, {
+      token_id: tokenId,
+      new_price: newPrice
     }),
   
-  // Deprecated: Atualizar status (apenas owner) - Use updateTicketStatusDirect instead
-  // WARNING: This method sends private keys to the backend which is a security risk
+  // Atualizar status (apenas owner) - Novo formato
   updateTicketStatus: (
     tokenId: number,
-    newStatus: number,
-    fromAccount: string,
-    privateKey: string
+    newStatus: number
   ) => 
-    apiClient.post(`/ticket/${tokenId}/update-status`, null, {
-      params: {
-        new_status: newStatus,
-        from_account: fromAccount,
-        private_key: privateKey
-      }
+    apiClient.post(`/ticket/${tokenId}/update-status`, {
+      token_id: tokenId,
+      new_status: newStatus
     }),
 };

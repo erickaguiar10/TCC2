@@ -19,15 +19,12 @@ const Events = () => {
     2: "Revenda"
   };
 
-  // Categorias de eventos
+  // Categorias baseadas nos status do contrato
   const categories = [
     "Todos",
-    "Música", 
-    "Esporte",
-    "Teatro",
-    "Comédia",
-    "Festival",
-    "Cultura"
+    "Disponível", 
+    "Vendido",
+    "Revenda"
   ];
 
   useEffect(() => {
@@ -43,21 +40,15 @@ const Events = () => {
     }
   };
 
-  // Simular categorias adicionando uma propriedade de categoria fictícia
-  const categorizedTickets = tickets.map(ticket => ({
-    ...ticket,
-    category: statusToCategory[ticket.status as number] || "Disponível"
-  }));
-
   // Filtrar tickets
-  const filteredEvents = categorizedTickets.filter(ticket => {
+  const filteredTickets = tickets.filter(ticket => {
     const matchesSearch = 
       (ticket.evento && ticket.evento.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (ticket.owner && ticket.owner.toLowerCase().includes(searchTerm.toLowerCase()));
     
+    const ticketCategory = statusToCategory[ticket.status as number] || "Disponível";
     const matchesCategory = 
-      selectedCategory === "Todos" || 
-      ticket.category === selectedCategory;
+      selectedCategory === "Todos" || ticketCategory === selectedCategory;
     
     return matchesSearch && matchesCategory;
   });
@@ -115,7 +106,7 @@ const Events = () => {
           <div className="text-center py-12">
             <p>Carregando eventos...</p>
           </div>
-        ) : filteredEvents.length === 0 ? (
+        ) : filteredTickets.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-muted-foreground text-lg">
               Nenhum evento encontrado para os critérios selecionados.
@@ -123,7 +114,7 @@ const Events = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredEvents.map((ticket) => (
+            {filteredTickets.map((ticket) => (
               <EventCard 
                 key={ticket.id}
                 id={ticket.id.toString()}
@@ -143,14 +134,13 @@ const Events = () => {
                       currency: 'BRL'
                     }).format(Number(ticket.preco) / 1e18)
                   : "Preço não definido"}
-                category={ticket.category}
-                ticketsLeft={100} // Valor fictício, pois não temos essa informação no contrato
+                category={statusToCategory[ticket.status as number] || "Disponível"}
               />
             ))}
           </div>
         )}
         
-        {filteredEvents.length > 0 && (
+        {filteredTickets.length > 0 && (
           <div className="text-center mt-10">
             <Button variant="outline" size="lg">
               Carregar Mais Eventos

@@ -94,6 +94,27 @@ class LoginRequest(BaseModel):
     signature: str
     timestamp: str
 
+# Request models for ticket operations
+class CreateTicketRequest(BaseModel):
+    event_name: str
+    price: int
+    event_date: int  # timestamp
+
+class BuyTicketRequest(BaseModel):
+    token_id: int
+    value: int
+
+class ResellTicketRequest(BaseModel):
+    token_id: int
+    new_price: int
+
+class UpdateTicketStatusRequest(BaseModel):
+    token_id: int
+    new_status: int  # 0=Disponivel, 1=Vendido, 2=Revenda
+
+class TransactionRequest(BaseModel):
+    private_key: str
+
 # Função de verificação de assinatura
 def verify_wallet_signature(wallet_address: str, message: str, signature: str) -> bool:
     try:
@@ -158,8 +179,8 @@ def get_contract_owner():
         response = JSONResponse(content={"owner": owner})
         return add_cors_headers(response)
     except Exception as e:
-        logger.error(str(e))
-        response = JSONResponse({"detail": str(e)}, status_code=500)
+        logger.error(f"Erro ao obter owner: {str(e)}")
+        response = JSONResponse({"detail": f"Erro ao obter owner: {str(e)}"}, status_code=500)
         return add_cors_headers(response)
 
 @app.get("/total-supply")
@@ -169,8 +190,8 @@ def get_total_supply_endpoint():
         response = JSONResponse(content={"totalSupply": total})
         return add_cors_headers(response)
     except Exception as e:
-        logger.error(str(e))
-        response = JSONResponse({"detail": str(e)}, status_code=500)
+        logger.error(f"Erro ao obter total supply: {str(e)}")
+        response = JSONResponse({"detail": f"Erro ao obter total supply: {str(e)}"}, status_code=500)
         return add_cors_headers(response)
 
 @app.get("/tickets")
@@ -179,8 +200,8 @@ def get_tickets_endpoint(start: int = Query(0, ge=0), limit: int = Query(100, le
         tickets = get_all_tickets(start, limit)
         return {"tickets": tickets}
     except Exception as e:
-        logger.error(str(e))
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Erro ao obter tickets: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro ao obter tickets: {str(e)}")
 
 @app.get("/ticket/{token_id}")
 def get_ticket_endpoint(token_id: int):
@@ -189,9 +210,11 @@ def get_ticket_endpoint(token_id: int):
         if not ticket:
             raise HTTPException(status_code=404, detail="Ingresso não encontrado")
         return ticket
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(str(e))
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Erro ao obter ingresso: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro ao obter ingresso: {str(e)}")
 
 @app.get("/ticket/{token_id}/status")
 def get_ticket_status_endpoint(token_id: int):
@@ -199,8 +222,8 @@ def get_ticket_status_endpoint(token_id: int):
         status = get_ticket_status(token_id)
         return {"status": status}
     except Exception as e:
-        logger.error(str(e))
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Erro ao obter status do ingresso: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro ao obter status do ingresso: {str(e)}")
 
 @app.get("/ticket/{token_id}/event-date")
 def get_event_date_endpoint(token_id: int):
@@ -208,8 +231,8 @@ def get_event_date_endpoint(token_id: int):
         event_date = get_event_date(token_id)
         return {"event_date": event_date}
     except Exception as e:
-        logger.error(str(e))
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Erro ao obter data do evento: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro ao obter data do evento: {str(e)}")
 
 @app.get("/tickets/owner/{owner_address}")
 def get_tickets_by_owner_endpoint(owner_address: str):
@@ -217,11 +240,101 @@ def get_tickets_by_owner_endpoint(owner_address: str):
         tickets = get_tickets_by_owner(owner_address)
         return {"tickets": tickets}
     except Exception as e:
-        logger.error(str(e))
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Erro ao obter ingressos do proprietário: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro ao obter ingressos do proprietário: {str(e)}")
 
-# POST endpoints: create, buy, resell, update-status (igual a antes)
-# Você pode adicionar os mesmos endpoints com Query params conforme seu código original
+# POST endpoints para criar, comprar, revender ingressos e atualizar status
+@app.post("/ticket/create")
+def create_ticket_endpoint(
+    request: CreateTicketRequest,
+    current_user: str = Depends(get_current_user)
+):
+    try:
+        # Obter a chave privada do usuário (em produção, isso deve ser armazenado de forma segura)
+        user_private_key = os.getenv(f"PRIVATE_KEY_{current_user.lower()}")
+        if not user_private_key:
+            raise HTTPException(status_code=400, detail="Chave privada não encontrada para o usuário")
+        
+        receipt = create_ticket(
+            request.event_name,
+            request.price,
+            request.event_date,
+            current_user,
+            user_private_key
+        )
+        return {"success": True, "transaction_hash": receipt.transactionHash.hex()}
+    except Exception as e:
+        logger.error(f"Erro ao criar ingresso: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro ao criar ingresso: {str(e)}")
+
+@app.post("/ticket/{token_id}/buy")
+def buy_ticket_endpoint(
+    token_id: int,
+    request: BuyTicketRequest,
+    current_user: str = Depends(get_current_user)
+):
+    try:
+        # Obter a chave privada do usuário (em produção, isso deve ser armazenado de forma segura)
+        user_private_key = os.getenv(f"PRIVATE_KEY_{current_user.lower()}")
+        if not user_private_key:
+            raise HTTPException(status_code=400, detail="Chave privada não encontrada para o usuário")
+        
+        receipt = buy_ticket(
+            request.token_id,
+            request.value,
+            current_user,
+            user_private_key
+        )
+        return {"success": True, "transaction_hash": receipt.transactionHash.hex()}
+    except Exception as e:
+        logger.error(f"Erro ao comprar ingresso: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro ao comprar ingresso: {str(e)}")
+
+@app.post("/ticket/{token_id}/resell")
+def resell_ticket_endpoint(
+    token_id: int,
+    request: ResellTicketRequest,
+    current_user: str = Depends(get_current_user)
+):
+    try:
+        # Obter a chave privada do usuário (em produção, isso deve ser armazenado de forma segura)
+        user_private_key = os.getenv(f"PRIVATE_KEY_{current_user.lower()}")
+        if not user_private_key:
+            raise HTTPException(status_code=400, detail="Chave privada não encontrada para o usuário")
+        
+        receipt = resell_ticket(
+            request.token_id,
+            request.new_price,
+            current_user,
+            user_private_key
+        )
+        return {"success": True, "transaction_hash": receipt.transactionHash.hex()}
+    except Exception as e:
+        logger.error(f"Erro ao revender ingresso: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro ao revender ingresso: {str(e)}")
+
+@app.post("/ticket/{token_id}/update-status")
+def update_ticket_status_endpoint(
+    token_id: int,
+    request: UpdateTicketStatusRequest,
+    current_user: str = Depends(get_current_user)
+):
+    try:
+        # Obter a chave privada do usuário (em produção, isso deve ser armazenado de forma segura)
+        user_private_key = os.getenv(f"PRIVATE_KEY_{current_user.lower()}")
+        if not user_private_key:
+            raise HTTPException(status_code=400, detail="Chave privada não encontrada para o usuário")
+        
+        receipt = update_ticket_status(
+            request.token_id,
+            request.new_status,
+            current_user,
+            user_private_key
+        )
+        return {"success": True, "transaction_hash": receipt.transactionHash.hex()}
+    except Exception as e:
+        logger.error(f"Erro ao atualizar status do ingresso: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro ao atualizar status do ingresso: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn

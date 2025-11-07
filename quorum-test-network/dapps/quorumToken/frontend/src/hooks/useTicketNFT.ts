@@ -20,8 +20,12 @@ export const useTicketNFT = () => {
     // Verificar se já existe um token armazenado
     const token = localStorage.getItem('access_token');
     if (token) {
-      // Verificar se o token é válido fazendo uma chamada de teste
-      checkTokenValidity();
+      setIsConnected(true);
+      // Obter a conta do usuário do armazenamento local
+      const storedAccount = localStorage.getItem('wallet_account');
+      if (storedAccount) {
+        setAccount(storedAccount);
+      }
     }
   }, []);
 
@@ -31,7 +35,7 @@ export const useTicketNFT = () => {
       if (isConnected && account && window.ethereum) {
         try {
           const ethersModule = await import("ethers");
-          const abi = await import("../../../../abis/TicketNFT.json");
+          const abi = await import("../abis/TicketNFT.json");
           const contractAddress = import.meta.env.VITE_TICKETNFT_ADDRESS || import.meta.env.VITE_CONTRACT_ADDRESS || "0x05d91B9031A655d08E654177336d08543AC4B711";
           
           const provider = new ethersModule.BrowserProvider(window.ethereum);
@@ -66,7 +70,9 @@ export const useTicketNFT = () => {
     } catch (error) {
       // Token inválido, remover
       localStorage.removeItem('access_token');
+      localStorage.removeItem('wallet_account');
       setIsConnected(false);
+      setAccount(null);
     }
   };
 
@@ -109,8 +115,9 @@ export const useTicketNFT = () => {
         const response = await api.login(userAccount, signature, timestamp);
         const { access_token } = response.data;
 
-        // Armazenar o token
+        // Armazenar o token e a conta do usuário
         localStorage.setItem('access_token', access_token);
+        localStorage.setItem('wallet_account', userAccount);
 
         setIsConnected(true);
         
@@ -259,16 +266,14 @@ export const useTicketNFT = () => {
     }
   };
 
-  // For backwards compatibility, but using backend API instead of private keys
+  // Using backend API (new format)
   const createTicket = async (
     eventName: string,
     price: number,
-    eventDate: number,
-    fromAccount: string,
-    privateKey: string
+    eventDate: number
   ): Promise<any> => {
     try {
-      const response = await api.createTicket(eventName, price, eventDate, fromAccount, privateKey);
+      const response = await api.createTicket(eventName, price, eventDate);
       return response.data;
     } catch (error: any) {
       console.error("❌ Erro ao criar ingresso:", error);
@@ -278,12 +283,10 @@ export const useTicketNFT = () => {
 
   const buyTicket = async (
     tokenId: number,
-    value: number,
-    fromAccount: string,
-    privateKey: string
+    value: number
   ): Promise<any> => {
     try {
-      const response = await api.buyTicket(tokenId, value, fromAccount, privateKey);
+      const response = await api.buyTicket(tokenId, value);
       return response.data;
     } catch (error: any) {
       console.error("❌ Erro ao comprar ingresso:", error);
@@ -293,12 +296,10 @@ export const useTicketNFT = () => {
 
   const resellTicket = async (
     tokenId: number,
-    newPrice: number,
-    fromAccount: string,
-    privateKey: string
+    newPrice: number
   ): Promise<any> => {
     try {
-      const response = await api.resellTicket(tokenId, newPrice, fromAccount, privateKey);
+      const response = await api.resellTicket(tokenId, newPrice);
       return response.data;
     } catch (error: any) {
       console.error("❌ Erro ao revender ingresso:", error);

@@ -1,11 +1,18 @@
 import React from "react";
 import { Button } from "../components/ui/button";
-import { categories } from "../data/mockEvents";
 
 interface CategoryFilterProps {
   selectedCategory: string;
   onCategoryChange: (category: string) => void;
 }
+
+// Categorias baseadas nos status do contrato
+const categories = [
+  "Todos",
+  "Disponível", 
+  "Vendido",
+  "Revenda"
+];
 
 const CategoryFilter = ({ selectedCategory, onCategoryChange }: CategoryFilterProps) => {
   return (

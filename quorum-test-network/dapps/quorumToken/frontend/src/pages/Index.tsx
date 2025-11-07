@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 import FeaturedEvents from "@/components/FeaturedEvents";
@@ -8,16 +8,59 @@ import CategoryFilter from "@/components/CategoryFilter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Filter } from "lucide-react";
-import { mockEvents, getEventsByCategory } from "@/data/mockEvents";
+import { useTicketNFT } from "../hooks/useTicketNFT";
+import { Ticket } from "../utils/api";
 
 const Index = () => {
-  const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("Todos");
+  const [allTickets, setAllTickets] = useState<Ticket[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { getTickets, error } = useTicketNFT();
 
-  const filteredEvents = getEventsByCategory(selectedCategory).filter(event =>
-    event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    event.location.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Mapear status para categorias
+  const statusToCategory: Record<number, string> = {
+    0: "Disponível",
+    1: "Vendido",
+    2: "Revenda"
+  };
+
+  // Categorias de eventos
+  const categories = [
+    "Todos",
+    "Disponível", 
+    "Vendido",
+    "Revenda"
+  ];
+
+  useEffect(() => {
+    fetchAllTickets();
+  }, []);
+
+  const fetchAllTickets = async () => {
+    try {
+      setLoading(true);
+      const tickets = await getTickets(0, 100); // Pegar os primeiros 100 tickets
+      setAllTickets(tickets);
+    } catch (err) {
+      console.error("Erro ao buscar ingressos:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Filtrar tickets
+  const filteredTickets = allTickets.filter(ticket => {
+    const matchesSearch = 
+      (ticket.evento && ticket.evento.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (ticket.owner && ticket.owner.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const ticketCategory = statusToCategory[ticket.status as number] || "Disponível";
+    const matchesCategory = 
+      selectedCategory === "Todos" || ticketCategory === selectedCategory;
+    
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -55,26 +98,64 @@ const Index = () => {
             </div>
           </div>
           
-          <CategoryFilter 
-            selectedCategory={selectedCategory}
-            onCategoryChange={setSelectedCategory}
-          />
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredEvents.map((event) => (
-              <EventCard key={event.id} {...event} />
+          <div className="flex flex-wrap gap-2 mb-6">
+            {categories.map((category) => (
+              <Button
+                key={category}
+                variant={selectedCategory === category ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedCategory(category)}
+              >
+                {category}
+              </Button>
             ))}
           </div>
           
-          {filteredEvents.length === 0 && (
+          {error && (
+            <div className="p-4 bg-red-100 text-red-700 rounded-md mb-6">
+              Erro: {error}
+            </div>
+          )}
+          
+          {loading ? (
+            <div className="text-center py-12">
+              <p>Carregando eventos...</p>
+            </div>
+          ) : filteredTickets.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground text-lg">
                 Nenhum evento encontrado para os critérios selecionados.
               </p>
             </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredTickets.map((ticket) => (
+                <EventCard 
+                  key={ticket.id}
+                  id={ticket.id.toString()}
+                  title={ticket.evento || `Ingresso #${ticket.id}`}
+                  image={ticket.evento ? `https://placehold.co/400x200?text=${encodeURIComponent(ticket.evento)}` : "https://placehold.co/400x200?text=Evento"}
+                  date={ticket.dataEvento 
+                    ? new Date(ticket.dataEvento * 1000).toLocaleDateString('pt-BR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                      })
+                    : "Data não definida"}
+                  location={ticket.owner || "Local não definido"}
+                  price={ticket.preco 
+                    ? new Intl.NumberFormat('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL'
+                      }).format(Number(ticket.preco) / 1e18)
+                    : "Preço não definido"}
+                  category={statusToCategory[ticket.status as number] || "Disponível"}
+                />
+              ))}
+            </div>
           )}
           
-          {filteredEvents.length > 0 && (
+          {filteredTickets.length > 0 && (
             <div className="text-center mt-10">
               <Button variant="outline" size="lg">
                 Carregar Mais Eventos
