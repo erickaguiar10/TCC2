@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
-import FeaturedEvents from "@/components/FeaturedEvents";
 import BlockchainFeatures from "@/components/BlockchainFeatures";
 import EventCard from "@/components/EventCard";
-import CategoryFilter from "@/components/CategoryFilter";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Search, Filter } from "lucide-react";
 import { useTicketNFT } from "../hooks/useTicketNFT";
 import { Ticket } from "../utils/api";
 
@@ -66,7 +62,6 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Header />
       <HeroSection />
-      <FeaturedEvents />
       <BlockchainFeatures />
       
       {/* All Events Section */}
@@ -82,20 +77,8 @@ const Index = () => {
               </p>
             </div>
             
-            <div className="flex flex-col sm:flex-row gap-3 lg:w-96">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar eventos..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Button variant="outline" size="icon">
-                <Filter className="h-4 w-4" />
-              </Button>
-            </div>
+            
+          
           </div>
           
           <div className="flex flex-wrap gap-2 mb-6">

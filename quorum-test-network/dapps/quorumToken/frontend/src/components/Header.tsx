@@ -11,8 +11,8 @@ const Header = () => {
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
             <a href="/" className="flex items-center space-x-2">
-              <span className="text-xl font-bold">Main</span>
-              <span className="text-xl font-bold text-accent">Tickets</span>
+              <span className="text-xl font-bold">Ticket</span>
+              <span className="text-xl font-bold text-accent">Main</span>
             </a>
           </div>
 

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = "http://localhost:3001/api";
 
 // 🧩 Cria a instância base do axios
 export const apiteste = axios.create({
@@ -60,6 +60,7 @@ export interface Ticket {
   preco?: string;
   dataEvento?: number;
   status?: number;
+  imagem?: string;
 }
 
 export interface TicketDetails extends Ticket {

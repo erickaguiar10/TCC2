@@ -5,28 +5,28 @@ import { Card, CardContent } from "../components/ui/card";
 const features = [
   {
     icon: Shield,
-    title: "Segurança Máxima",
-    description: "Seus ingressos são protegidos por criptografia de nível militar e tecnologia blockchain."
+    title: "Segurança",
+    description: "Seus ingressos são protegidos por criptografia e tecnologia blockchain."
   },
   {
     icon: Lock,
     title: "Prova de Autenticidade",
-    description: "Cada ingresso possui uma assinatura digital única e imutável, eliminando falsificações."
+    description: "Cada ingresso possui uma assinatura digital única e imutável"
   },
   {
     icon: Eye,
-    title: "Transparência Total",
-    description: "Acompanhe toda a cadeia de custódia do seu ingresso desde a criação até o uso."
+    title: "Transparência",
+    description: "Permite acompanhar todo o ciclo de vida do ingresso, desde sua emissão até a utilização, por meio dos dados públicos das transações registradas na blockchain."
   },
   {
     icon: Zap,
-    title: "Transações Instantâneas",
-    description: "Compras e transferências processadas em segundos com confirmação imediata."
+    title: "Transações",
+    description: "Compras e transferências realizadas de forma ágil, com registro público das transações."
   },
   {
     icon: CheckCircle,
-    title: "Verificação Simples",
-    description: "Validação de ingressos através de QR code conectado diretamente à blockchain."
+    title: "Verificação",
+    description: "Processo de verificação simples, com autenticidade garantida pela blockchain."
   },
   {
     icon: Globe,
@@ -45,7 +45,7 @@ const BlockchainFeatures = () => {
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Revolucionamos a experiência de compra de ingressos com tecnologia de ponta, 
-            garantindo segurança, transparência e confiança em cada transação.
+            com segurança, transparência e confiança em cada transação.
           </p>
         </div>
         

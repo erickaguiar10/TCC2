@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Query, Depends, Request
+from fastapi import FastAPI, HTTPException, Query, Depends, Request, UploadFile, File
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
@@ -99,6 +99,7 @@ class CreateTicketRequest(BaseModel):
     event_name: str
     price: int
     event_date: int  # timestamp
+    image_url: Optional[str] = None  # URL da imagem opcional
 
 class BuyTicketRequest(BaseModel):
     token_id: int
@@ -198,6 +199,15 @@ def get_total_supply_endpoint():
 def get_tickets_endpoint(start: int = Query(0, ge=0), limit: int = Query(100, le=1000)):
     try:
         tickets = get_all_tickets(start, limit)
+        
+        # Em uma implementação real, aqui seria onde adicionamos as URLs das imagens
+        # associadas aos ingressos consultando um banco de dados ou sistema de arquivos
+        # Por enquanto, iremos retornar os tickets com campo de imagem vazio
+        for ticket in tickets:
+            # Em uma implementação completa, adicionariamos a URL da imagem aqui
+            # Exemplo: ticket['imagem'] = obter_url_imagem(ticket['id'])
+            pass
+            
         return {"tickets": tickets}
     except Exception as e:
         logger.error(f"Erro ao obter tickets: {str(e)}")
@@ -209,6 +219,8 @@ def get_ticket_endpoint(token_id: int):
         ticket = get_ticket_details(token_id)
         if not ticket:
             raise HTTPException(status_code=404, detail="Ingresso não encontrado")
+        # Em uma implementação completa, adicionariamos a URL da imagem ao ticket
+        # Exemplo: ticket['imagem'] = obter_url_imagem(token_id)
         return ticket
     except HTTPException:
         raise
@@ -238,6 +250,10 @@ def get_event_date_endpoint(token_id: int):
 def get_tickets_by_owner_endpoint(owner_address: str):
     try:
         tickets = get_tickets_by_owner(owner_address)
+        # Em uma implementação completa, adicionariamos as URLs das imagens
+        for ticket in tickets:
+            # Exemplo: ticket['imagem'] = obter_url_imagem(ticket['id'])
+            pass
         return {"tickets": tickets}
     except Exception as e:
         logger.error(f"Erro ao obter ingressos do proprietário: {str(e)}")
@@ -250,11 +266,16 @@ def create_ticket_endpoint(
     current_user: str = Depends(get_current_user)
 ):
     try:
+        # Verificar se o usuário é o proprietário do contrato (apenas o proprietário pode criar ingressos)
+        owner = get_owner()
+        if owner.lower() != current_user.lower():
+            raise HTTPException(status_code=403, detail="Apenas o proprietário do contrato pode criar ingressos")
+        
         # Obter a chave privada do usuário (em produção, isso deve ser armazenado de forma segura)
         user_private_key = os.getenv(f"PRIVATE_KEY_{current_user.lower()}")
         if not user_private_key:
             raise HTTPException(status_code=400, detail="Chave privada não encontrada para o usuário")
-        
+
         receipt = create_ticket(
             request.event_name,
             request.price,
@@ -262,7 +283,21 @@ def create_ticket_endpoint(
             current_user,
             user_private_key
         )
-        return {"success": True, "transaction_hash": receipt.transactionHash.hex()}
+        
+        # Em uma implementação completa, teríamos um banco de dados para armazenar metadados
+        # Fora do contrato inteligente, como URLs de imagens
+        
+        # Retornar sucesso com informações adicionais
+        response_data = {
+            "success": True, 
+            "transaction_hash": receipt.transactionHash.hex(),
+        }
+        
+        # Adiciona a URL da imagem se fornecida
+        if request.image_url:
+            response_data["image_url"] = request.image_url
+            
+        return response_data
     except Exception as e:
         logger.error(f"Erro ao criar ingresso: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Erro ao criar ingresso: {str(e)}")
@@ -278,7 +313,7 @@ def buy_ticket_endpoint(
         user_private_key = os.getenv(f"PRIVATE_KEY_{current_user.lower()}")
         if not user_private_key:
             raise HTTPException(status_code=400, detail="Chave privada não encontrada para o usuário")
-        
+
         receipt = buy_ticket(
             request.token_id,
             request.value,
@@ -301,7 +336,7 @@ def resell_ticket_endpoint(
         user_private_key = os.getenv(f"PRIVATE_KEY_{current_user.lower()}")
         if not user_private_key:
             raise HTTPException(status_code=400, detail="Chave privada não encontrada para o usuário")
-        
+
         receipt = resell_ticket(
             request.token_id,
             request.new_price,
@@ -324,7 +359,7 @@ def update_ticket_status_endpoint(
         user_private_key = os.getenv(f"PRIVATE_KEY_{current_user.lower()}")
         if not user_private_key:
             raise HTTPException(status_code=400, detail="Chave privada não encontrada para o usuário")
-        
+
         receipt = update_ticket_status(
             request.token_id,
             request.new_status,
@@ -335,6 +370,36 @@ def update_ticket_status_endpoint(
     except Exception as e:
         logger.error(f"Erro ao atualizar status do ingresso: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Erro ao atualizar status do ingresso: {str(e)}")
+
+# Endpoint para upload de imagens
+@app.post("/upload/image")
+async def upload_image(
+    file: UploadFile = File(...),
+    current_user: str = Depends(get_current_user)
+):
+    """Endpoint para upload de imagens para eventos"""
+    try:
+        # Verificar se o arquivo é uma imagem
+        allowed_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
+        file_extension = os.path.splitext(file.filename)[1].lower()
+        
+        if file_extension not in allowed_extensions:
+            raise HTTPException(status_code=400, detail="Tipo de arquivo não suportado. Apenas imagens são permitidas.")
+        
+        # Ler o conteúdo do arquivo
+        contents = await file.read()
+        
+        # Aqui normalmente salvaríamos a imagem em algum sistema de arquivos ou CDN
+        # Por enquanto, retornamos uma mensagem informando que o upload foi feito
+        return {
+            "filename": file.filename,
+            "size": len(contents),
+            "content_type": file.content_type,
+            "message": "Upload realizado com sucesso"
+        }
+    except Exception as e:
+        logger.error(f"Erro ao fazer upload da imagem: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro ao fazer upload da imagem: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn

@@ -1,194 +1,256 @@
-# blockchain.py
 from web3 import Web3
-import json
+from eth_account import Account
 import os
 from dotenv import load_dotenv
-import logging
+import json
+import time
 
-# Configurar logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
+# Carregar variáveis de ambiente do arquivo .env
 load_dotenv()
 
-RPC_URL = os.getenv("RPC_URL", "http://127.0.0.1:8545")
-w3 = Web3(Web3.HTTPProvider(RPC_URL))
+# Conectar-se ao nó Ethereum
+rpc_url = os.getenv("RPC_URL", "http://localhost:8545")
+w3 = Web3(Web3.HTTPProvider(rpc_url))
 
+# Verificar conexão
 if not w3.is_connected():
-    raise Exception(f"❌ Não conectou no nó {RPC_URL}")
+    raise Exception("Falha ao conectar ao nó Ethereum")
 
-# contrato
-contract_address = os.getenv("CONTRACT_ADDRESS", "0x05d91B9031A655d08E654177336d08543ac4B711")
-contract_address = Web3.to_checksum_address(contract_address)
+# Endereço do contrato e ABI (substitua pelo endereço real do seu contrato implantado)
+contract_address_env = os.getenv("CONTRACT_ADDRESS")
+if not contract_address_env:
+    raise Exception("CONTRACT_ADDRESS não definido no .env")
 
-# Ler ABI do contrato
-abi_path = os.getenv("ABI_PATH", "../abis/TicketNFT.json")
-with open(abi_path) as f:
-    abi = json.load(f)["abi"]
+contract_address = Web3.to_checksum_address(contract_address_env)
 
+# Carregar ABI do contrato
+try:
+    with open("TicketNFT.json", "r") as f:
+        abi = json.load(f)["abi"]
+except FileNotFoundError:
+    try:
+        # Tentar no diretório abis também
+        with open("abis/TicketNFT.json", "r") as f:
+            abi = json.load(f)["abi"]
+    except FileNotFoundError:
+        raise Exception("Arquivo ABI não encontrado. Execute 'npm run copy-abi' primeiro.")
+
+# Criar instância do contrato
 contract = w3.eth.contract(address=contract_address, abi=abi)
 
-print("Conectado ao contrato:", contract_address)
-
 def get_owner():
-    """Obtém o dono do contrato"""
-    try:
-        return contract.functions.owner().call()
-    except Exception as e:
-        print(f"Erro ao obter owner: {str(e)}")
-        raise e
+    """Obter o proprietário do contrato"""
+    return contract.functions.owner().call()
 
 def get_total_supply():
-    """Obtém o número total de ingressos"""
-    # Usando a função listarIngressos que retorna todos os tokens
-    tokens = contract.functions.listarIngressos().call()
-    return len(tokens)
-
-def get_token_owner(token_id):
-    """Obtém o dono de um ingresso específico"""
-    return contract.functions.ownerOf(token_id).call()
+    """Obter o fornecimento total de tokens"""
+    return contract.functions.totalSupply().call()
 
 def get_ticket_details(token_id):
-    """Obtém os detalhes de um ingresso específico"""
-    # Usando a função verificarIngresso para verificar se o ingresso existe
-    exists = contract.functions.verificarIngresso(token_id).call()
-    if not exists:
+    """Obter detalhes de um ingresso específico"""
+    try:
+        # Obter detalhes do ingresso do contrato
+        ticket_data = contract.functions.ingressos(token_id).call()
+        
+        # Obter informações adicionais
+        owner = contract.functions.ownerOf(token_id).call()
+        status = contract.functions.statusIngresso(token_id).call()
+        event_date = contract.functions.dataEvento(token_id).call()
+        
+        # Simular URL de imagem com base no ID do ticket (em uma implementação real, isso viria de um banco de dados)
+        image_url = f"https://placehold.co/600x400?text=Evento+{token_id}"
+        
+        return {
+            "id": token_id,
+            "owner": owner,
+            "evento": ticket_data[0],  # Nome do evento
+            "preco": str(ticket_data[1]),  # Preço do evento
+            "dataEvento": ticket_data[2],  # Data do evento
+            "status": status,
+            "imagem": image_url  # Adicionando campo de imagem
+        }
+    except Exception as e:
+        print(f"Erro ao obter detalhes do ingresso: {e}")
         return None
-    
-    # Recuperar os detalhes do ingresso
-    ingresso = contract.functions.ingressos(token_id).call()
-    
-    return {
-        "evento": ingresso[0],  # string evento
-        "preco": ingresso[1],   # uint256 preco
-        "dataEvento": ingresso[2],  # uint256 dataEvento
-        "status": ingresso[3]   # uint256 status (0=Disponivel, 1=Vendido, 2=Revenda)
-    }
 
 def get_ticket_status(token_id):
-    """Obtém o status de um ingresso específico"""
+    """Obter status de um ingresso"""
     return contract.functions.statusIngresso(token_id).call()
 
 def get_event_date(token_id):
-    """Obtém a data do evento de um ingresso específico"""
+    """Obter a data do evento de um ingresso"""
     return contract.functions.dataEvento(token_id).call()
 
 def get_tickets_by_owner(owner_address):
-    """Obtém a lista de ingressos de um usuário específico"""
-    return contract.functions.ingressosDoUsuario(owner_address).call()
+    """Obter todos os ingressos de um proprietário"""
+    try:
+        # Obter lista de token IDs do usuário
+        ticket_ids = contract.functions.ingressosDoUsuario(owner_address).call()
+        
+        tickets = []
+        for token_id in ticket_ids:
+            ticket = get_ticket_details(token_id)
+            if ticket:
+                # Adicionar URL de imagem simulada
+                ticket["imagem"] = f"https://placehold.co/600x400?text=Evento+{token_id}"
+                tickets.append(ticket)
+        
+        return tickets
+    except Exception as e:
+        print(f"Erro ao obter ingressos do proprietário: {e}")
+        return []
 
 def get_all_tickets(start=0, limit=100):
-    """Obtém uma lista paginada de todos os ingressos"""
-    # Usando a função listarIngressos que retorna todos os tokens
-    all_tokens = contract.functions.listarIngressos().call()
-    total = len(all_tokens)
-    
-    # Aplicar limites para evitar sobrecarga
-    end = min(start + limit, total)
-    
-    tickets = []
-    for i in range(start, end):
-        try:
-            token_id = all_tokens[i]
-            owner = contract.functions.ownerOf(token_id).call()
-            ticket_details = get_ticket_details(token_id)
-            
-            ticket_info = {
-                "id": token_id,
-                "owner": owner
-            }
-            
-            if ticket_details:
-                ticket_info.update({
-                    "evento": ticket_details["evento"],
-                    "preco": ticket_details["preco"],
-                    "dataEvento": ticket_details["dataEvento"],
-                    "status": ticket_details["status"]
-                })
-            
-            tickets.append(ticket_info)
-        except Exception as e:
-            logger.warning(f"Erro ao obter informações do token na posição {i}: {str(e)}")
-            # Adiciona apenas informações básicas se houver erro
-            tickets.append({
-                "id": "unknown",
-                "owner": "unknown",
-                "error": str(e)
-            })
-    
-    return tickets
+    """Obter todos os ingressos"""
+    try:
+        # Obter o fornecimento total de tokens
+        total_supply = get_total_supply()
+        
+        tickets = []
+        # Obter os tokens dentro do intervalo especificado
+        for i in range(start, min(start + limit, total_supply)):
+            try:
+                token_id = contract.functions.tokenByIndex(i).call()
+                ticket = get_ticket_details(token_id)
+                if ticket:
+                    # Adicionar URL de imagem simulada
+                    ticket["imagem"] = f"https://placehold.co/600x400?text=Evento+{token_id}"
+                    tickets.append(ticket)
+            except:
+                # Se o token não existir no índice (pode ter sido queimado), continuar
+                continue
+        
+        return tickets
+    except Exception as e:
+        print(f"Erro ao obter todos os ingressos: {e}")
+        return []
 
-def create_ticket(event_name, price, event_date, from_account, private_key):
-    """Cria um novo ingresso (apenas owner)"""
-    nonce = w3.eth.get_transaction_count(from_account)
+def create_ticket(event_name, price, event_date, owner_address, private_key):
+    """Criar novo ingresso (só pode ser feito pelo proprietário do contrato)"""
+    # Obter a conta com a chave privada
+    account = Account.from_key(private_key)
+    address = account.address
     
-    txn = contract.functions.criarIngresso(
+    # Verificar se o autor é o proprietário
+    contract_owner = get_owner()
+    if contract_owner.lower() != address.lower():
+        raise Exception("Somente o proprietário do contrato pode criar ingressos")
+    
+    # Construir a transação
+    transaction = contract.functions.criarIngresso(
         event_name,
         price,
         event_date
     ).build_transaction({
-        'chainId': w3.eth.chain_id,
-        'gas': 2000000,
-        'gasPrice': w3.eth.gas_price,
-        'nonce': nonce
+        'from': address,
+        'nonce': w3.eth.get_transaction_count(address),
+        'gas': 500000,  # Definir limite de gás adequado
+        'gasPrice': w3.eth.gas_price  # Usar preço do gás atual
     })
     
-    signed_txn = w3.eth.account.sign_transaction(txn, private_key)
-    tx_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+    # Assinar a transação
+    signed_txn = w3.eth.account.sign_transaction(transaction, private_key)
     
-    return w3.eth.wait_for_transaction_receipt(tx_hash)
+    # Enviar a transação
+    tx_hash = w3.eth.send_raw_transaction(signed_txn.raw_transaction)
+    
+    # Aguardar a confirmação da transação
+    receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+    
+    return receipt
 
-def buy_ticket(token_id, value, from_account, private_key):
-    """Compra um ingresso"""
-    nonce = w3.eth.get_transaction_count(from_account)
+def buy_ticket(token_id, value, buyer_address, private_key):
+    """Comprar um ingresso"""
+    # Obter a conta com a chave privada
+    account = Account.from_key(private_key)
+    address = account.address
     
-    txn = contract.functions.comprarIngresso(token_id).build_transaction({
-        'chainId': w3.eth.chain_id,
-        'gas': 2000000,
-        'gasPrice': w3.eth.gas_price,
-        'value': value,
-        'nonce': nonce
+    # Obter preço do ingresso
+    ticket_data = contract.functions.ingressos(token_id).call()
+    price = ticket_data[1]  # Preço do ingresso
+    
+    # Construir a transação
+    transaction = contract.functions.comprarIngresso(token_id).build_transaction({
+        'from': address,
+        'value': price,  # Enviar o valor do preço do ingresso
+        'nonce': w3.eth.get_transaction_count(address),
+        'gas': 500000,  # Definir limite de gás adequado
+        'gasPrice': w3.eth.gas_price  # Usar preço do gás atual
     })
     
-    signed_txn = w3.eth.account.sign_transaction(txn, private_key)
-    tx_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+    # Assinar a transação
+    signed_txn = w3.eth.account.sign_transaction(transaction, private_key)
     
-    return w3.eth.wait_for_transaction_receipt(tx_hash)
+    # Enviar a transação
+    tx_hash = w3.eth.send_raw_transaction(signed_txn.raw_transaction)
+    
+    # Aguardar a confirmação da transação
+    receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+    
+    return receipt
 
-def resell_ticket(token_id, new_price, from_account, private_key):
-    """Coloca um ingresso à revenda"""
-    nonce = w3.eth.get_transaction_count(from_account)
+def resell_ticket(token_id, new_price, owner_address, private_key):
+    """Revender um ingresso"""
+    # Obter a conta com a chave privada
+    account = Account.from_key(private_key)
+    address = account.address
     
-    txn = contract.functions.revenderIngresso(
+    # Verificar se o autor é o proprietário do token
+    token_owner = contract.functions.ownerOf(token_id).call()
+    if token_owner.lower() != address.lower():
+        raise Exception("Somente o proprietário do ingresso pode revendê-lo")
+    
+    # Construir a transação
+    transaction = contract.functions.revenderIngresso(
         token_id,
         new_price
     ).build_transaction({
-        'chainId': w3.eth.chain_id,
-        'gas': 2000000,
-        'gasPrice': w3.eth.gas_price,
-        'nonce': nonce
+        'from': address,
+        'nonce': w3.eth.get_transaction_count(address),
+        'gas': 500000,  # Definir limite de gás adequado
+        'gasPrice': w3.eth.gas_price  # Usar preço do gás atual
     })
     
-    signed_txn = w3.eth.account.sign_transaction(txn, private_key)
-    tx_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+    # Assinar a transação
+    signed_txn = w3.eth.account.sign_transaction(transaction, private_key)
     
-    return w3.eth.wait_for_transaction_receipt(tx_hash)
+    # Enviar a transação
+    tx_hash = w3.eth.send_raw_transaction(signed_txn.raw_transaction)
+    
+    # Aguardar a confirmação da transação
+    receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+    
+    return receipt
 
-def update_ticket_status(token_id, new_status, from_account, private_key):
-    """Atualiza o status de um ingresso (apenas owner)"""
-    nonce = w3.eth.get_transaction_count(from_account)
+def update_ticket_status(token_id, new_status, owner_address, private_key):
+    """Atualizar status de um ingresso (só pode ser feito pelo proprietário do contrato)"""
+    # Obter a conta com a chave privada
+    account = Account.from_key(private_key)
+    address = account.address
     
-    txn = contract.functions.atualizarStatus(
+    # Verificar se o autor é o proprietário
+    contract_owner = get_owner()
+    if contract_owner.lower() != address.lower():
+        raise Exception("Somente o proprietário do contrato pode atualizar o status")
+    
+    # Construir a transação
+    transaction = contract.functions.atualizarStatus(
         token_id,
         new_status
     ).build_transaction({
-        'chainId': w3.eth.chain_id,
-        'gas': 2000000,
-        'gasPrice': w3.eth.gas_price,
-        'nonce': nonce
+        'from': address,
+        'nonce': w3.eth.get_transaction_count(address),
+        'gas': 500000,  # Definir limite de gás adequado
+        'gasPrice': w3.eth.gas_price  # Usar preço do gás atual
     })
     
-    signed_txn = w3.eth.account.sign_transaction(txn, private_key)
-    tx_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+    # Assinar a transação
+    signed_txn = w3.eth.account.sign_transaction(transaction, private_key)
     
-    return w3.eth.wait_for_transaction_receipt(tx_hash)
+    # Enviar a transação
+    tx_hash = w3.eth.send_raw_transaction(signed_txn.raw_transaction)
+    
+    # Aguardar a confirmação da transação
+    receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+    
+    return receipt

@@ -9,8 +9,8 @@
   - [Dev Network Setups](#dev-network-setups)
     - [i. POA Network ](#i-poa-network-)
     - [ii. POA Network with Privacy ](#ii-poa-network-with-privacy-)
-    - [iii. Smart Contracts \& DApps ](#iii-smart-contracts--dapps-)
   - [Moving to production](#moving-to-production)
+  - [Running the QuorumToken DApp](#running-the-quorumtoken-dapp)
 
 ## Prerequisites
 
@@ -27,6 +27,7 @@ To run these tutorials, you must have the following installed:
 - On Windows ensure that the drive that this repo is cloned onto is a "Shared Drive" with Docker Desktop
 - On Windows we recommend running all commands from GitBash
 - [Nodejs](https://nodejs.org/en/download/) or [Yarn](https://yarnpkg.com/cli/node)
+- [Python 3.8+](https://www.python.org/downloads/)
 
 ## Usage
 
@@ -177,36 +178,97 @@ There is an additional erc20 token example that you can also test with: executin
 
 This can be verified from the `data` field of the `logs` which is `1`.
 
-### iii. Smart Contracts & DApps <a name="poa-network-dapps"></a>
-
-As an example we've included the Truffle Pet-Shop Dapp in the `dapps` folder and here is a [video tutorial](https://www.youtube.com/watch?v=_3E9FRJldj8) you
-can follow of deployment to the network and using it. Please import the private key `0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3` to
-Metmask **before** proceeding to build and run the DApp with `run-dapp.sh`. Behind the scenes, this has used a smart contract that is compiled and then
-deployed (via a migration) to our test network. The source code for the smart contract and the DApp can be found in the folder `dapps/pet-shop`
-
-| ⚠️ **WARNING**: |
-| ---  
-This is a test account only and the private and public keys are publicly visible. **Using test accounts on Ethereum mainnet and production networks can lead to loss of funds and identity fraud.** In this documentation, we only provide test accounts for ease of testing and learning purposes; never use them for other purposes. **Always secure your Ethereum mainnet and any production account properly.** See for instance [MyCrypto "Protecting Yourself and Your Funds" guide](https://support.mycrypto.com/staying-safe/protecting-yourself-and-your-funds). |
-
-![Image dapp](./static/qs-dapp.png)
-
-As seen in the architecture overview diagram you can extend the network with monitoring, logging, smart contracts, DApps and so on
-
-- Once you have a network up and running from above, install [metamask](https://metamask.io/) as an extension in your browser
-- Once you have setup your own private account, select 'My Accounts' by clicking on the avatar pic and then 'Import Account' and enter the private key `0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3`
-- Build the DApp container and deploy by
-
-```
-cd dapps/pet-shop
-./run_dapp.sh
-```
-
-When that completes open a new tab in your browser and go to `http://localhost:3001` which opens the Truffle pet-shop box app
-and you can adopt a pet from there. NOTE: Once you have adopted a pet, you can also go to the block explorer `http://localhost:25000`
-and search for the transaction where you can see its details recorded. Metamask will also have a record of any transactions.
-
 ## Moving to production
 
 When you are ready to move to production, please create new keys for your nodes using the
 [Quorum Genesis Tool](https://www.npmjs.com/package/quorum-genesis-tool) and read through the the
 [Besu documentation](https://besu.hyperledger.org/en/latest/HowTo/Deploy/Cloud/)
+
+## Running the QuorumToken DApp
+
+### Step-by-step guide to compile and run the project:
+
+1. **Start the Quorum network**:
+   ```bash
+   ./run.sh
+   ```
+
+2. **Navigate to the DApp directory**:
+   ```bash
+   cd dapps/quorumToken
+   ```
+
+3. **Install Node.js dependencies**:
+   ```bash
+   npm install
+   ```
+
+4. **Install Python dependencies**:
+   ```bash
+   pip install uvicorn fastapi python-dotenv pyjwt cryptography web3 python-multipart eth-account requests aiofiles
+   ```
+
+5. **Create .env file** (if not already created):
+   ```bash
+   # Create the .env file with necessary configurations
+   echo "RPC_URL=http://localhost:8545" > .env
+   echo "PRIVATE_KEY=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3" >> .env
+   echo "CONTRACT_ADDRESS=" >> .env
+   echo "BACKEND_PORT=8000" >> .env
+   echo "FRONTEND_PORT=8080" >> .env
+   echo "PROXY_PORT=3001" >> .env
+   echo "SECRET_KEY=supersecretkey" >> .env
+   ```
+
+6. **Compile the smart contracts**:
+   ```bash
+   npx hardhat compile
+   ```
+
+7. **Deploy the smart contracts to the local network**:
+   ```bash
+   npx hardhat run scripts/deploy.js --network localhost
+   ```
+   The contract address will be automatically saved to your .env file.
+
+8. **Start the backend server** (in a separate terminal):
+   ```bash
+   cd backend
+   python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+   ```
+
+9. **Start the proxy server** (in a separate terminal):
+   ```bash
+   npm start
+   ```
+
+10. **Install frontend dependencies and start the frontend** (in a separate terminal):
+    ```bash
+    cd frontend
+    npm install
+    npm run dev
+    ```
+
+### Project Structure and Components:
+
+- **Smart Contracts**: Located in `/contracts` directory, implement NFT-based ticket functionality
+- **Backend**: Python/FastAPI server in `/backend` directory, handles blockchain interactions and API endpoints
+- **Frontend**: React/Vite application in `/frontend` directory, provides user interface for the DApp
+- **Proxy**: Express.js proxy server that routes API requests to the backend and blockchain requests to the network
+
+### Available Endpoints:
+
+- **Quorum Blockchain**: http://localhost:8545
+- **Block Explorer**: http://localhost:25000
+- **Backend API**: http://localhost:8000
+- **Proxy Server**: http://localhost:3001
+- **Frontend DApp**: http://localhost:8080 (when running with Vite)
+
+### Key Features:
+
+- NFT-based ticket management (create, buy, resell tickets)
+- Wallet-based authentication
+- Blockchain integration for secure transactions
+- Complete API layer for backend operations
+- Responsive React frontend with Tailwind CSS
+- Proxy server for handling CORS and request routing

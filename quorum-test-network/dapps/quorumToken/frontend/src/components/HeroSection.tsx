@@ -39,7 +39,7 @@ const HeroSection = () => {
             </span>
           </h1>
           <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-2xl mx-auto">
-            Segurança máxima, transparência total e autenticidade garantida para seus eventos favoritos.
+            Segurança, transparência e autenticidade garantida para seus eventos favoritos.
           </p>
         </div>
         
@@ -59,23 +59,6 @@ const HeroSection = () => {
           </div>
         </div>
         
-        {/* Search Bar */}
-        <div className="max-w-md mx-auto mb-8">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input
-              placeholder="Encontre seu próximo evento..."
-              className="pl-12 h-14 bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder:text-white/60 focus:ring-accent focus:border-accent text-lg"
-            />
-            <Button 
-              size="lg"
-              className="absolute right-2 top-2 bg-gradient-accent hover:opacity-90 h-10"
-            >
-              Buscar
-            </Button>
-          </div>
-        </div>
-        
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button 
@@ -84,13 +67,6 @@ const HeroSection = () => {
             asChild
           >
             <a href="/eventos">Explorar Eventos</a>
-          </Button>
-          <Button 
-            size="lg"
-            variant="outline"
-            className="text-white border-white/30 hover:bg-white/10 text-lg px-8 h-12"
-          >
-            Como Funciona
           </Button>
         </div>
       </div>
