@@ -4,17 +4,24 @@ import os
 from dotenv import load_dotenv
 import json
 import time
+import logging
+
+# Configurar logging
+logger = logging.getLogger(__name__)
 
 # Carregar variáveis de ambiente do arquivo .env
 load_dotenv()
 
 # Conectar-se ao nó Ethereum
 rpc_url = os.getenv("RPC_URL", "http://localhost:8545")
+logger.info(f"Tentando conectar ao RPC: {rpc_url}")
 w3 = Web3(Web3.HTTPProvider(rpc_url))
 
 # Verificar conexão
 if not w3.is_connected():
     raise Exception("Falha ao conectar ao nó Ethereum")
+
+logger.info("Conexão com o nó Ethereum estabelecida com sucesso")
 
 # Endereço do contrato e ABI (substitua pelo endereço real do seu contrato implantado)
 contract_address_env = os.getenv("CONTRACT_ADDRESS")
@@ -22,21 +29,25 @@ if not contract_address_env:
     raise Exception("CONTRACT_ADDRESS não definido no .env")
 
 contract_address = Web3.to_checksum_address(contract_address_env)
+logger.info(f"Endereço do contrato: {contract_address}")
 
 # Carregar ABI do contrato
 try:
     with open("TicketNFT.json", "r") as f:
         abi = json.load(f)["abi"]
+    logger.info("ABI carregada do arquivo TicketNFT.json")
 except FileNotFoundError:
     try:
         # Tentar no diretório abis também
         with open("abis/TicketNFT.json", "r") as f:
             abi = json.load(f)["abi"]
+        logger.info("ABI carregada do arquivo abis/TicketNFT.json")
     except FileNotFoundError:
         raise Exception("Arquivo ABI não encontrado. Execute 'npm run copy-abi' primeiro.")
 
 # Criar instância do contrato
 contract = w3.eth.contract(address=contract_address, abi=abi)
+logger.info("Instância do contrato criada com sucesso")
 
 def get_owner():
     """Obter o proprietário do contrato"""

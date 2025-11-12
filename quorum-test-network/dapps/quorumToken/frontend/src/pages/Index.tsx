@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 import BlockchainFeatures from "@/components/BlockchainFeatures";
 import EventCard from "@/components/EventCard";
@@ -60,7 +59,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
       <HeroSection />
       <BlockchainFeatures />
       

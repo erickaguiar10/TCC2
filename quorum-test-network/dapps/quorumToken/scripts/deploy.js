@@ -57,6 +57,7 @@ async function main() {
   }
 }
 
+// Exportar main para poder ser chamado de outro lugar
 main().catch((error) => {
   console.error(error);
   process.exitCode = 1;

@@ -33,13 +33,14 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 # FastAPI app
 app = FastAPI()
 
-# 🚀 CORS config - Updated for GitHub Codespaces
-FRONTEND_URL = "https://congenial-parakeet-56xwvj4j4j37jw6-8080.app.github.dev"
+# 🚀 CORS config - Updated for local development and GitHub Codespaces
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:8080")
+PROXY_URL = os.getenv("PROXY_URL", "http://localhost:3001")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_URL, "https://congenial-parakeet-56xwvj4j4j37jw6-8000.app.github.dev", "*"],  # Allow both frontend and backend URLs plus wildcard
-    allow_credentials=False,
+    allow_origins=[FRONTEND_URL, PROXY_URL, "http://localhost:8080", "http://localhost:3001", "*"],  # Allow both frontend and proxy URLs plus wildcard
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -162,7 +163,7 @@ async def login(request: LoginRequest):
         )
 
         return JSONResponse(
-            content={"access_token": access_token, "token_type": "bearer"},
+            content={"access_token": access_token, "token_type": "Bearer"},
             status_code=200
         )
 
@@ -400,6 +401,26 @@ async def upload_image(
     except Exception as e:
         logger.error(f"Erro ao fazer upload da imagem: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Erro ao fazer upload da imagem: {str(e)}")
+
+# Endpoint de saúde para verificar se o backend está respondendo
+@app.get("/health")
+async def health_check():
+    """Endpoint para verificar saúde do serviço"""
+    try:
+        # Tenta se conectar ao blockchain para verificar se está funcionando
+        from blockchain import get_owner
+        owner = get_owner()
+        return {
+            "status": "healthy", 
+            "message": "Backend e conexão com blockchain operacionais",
+            "contract_owner": owner
+        }
+    except Exception as e:
+        logger.error(f"Erro na verificação de saúde: {str(e)}")
+        return {
+            "status": "unhealthy", 
+            "message": f"Erro na conexão com blockchain: {str(e)}"
+        }
 
 if __name__ == "__main__":
     import uvicorn

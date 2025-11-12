@@ -1,8 +1,19 @@
 import { useState } from "react";
 import { Button } from "../components/ui/button";
 import { ConnectWalletButton } from "./ConnectWalletButton";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../components/ui/dropdown-menu";
+import { MoreVertical } from "lucide-react";
 
-const Header = () => {
+interface HeaderProps {
+  canCreateEvent?: boolean;
+}
+
+const Header: React.FC<HeaderProps> = ({ canCreateEvent = false }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
@@ -26,6 +37,24 @@ const Header = () => {
           </nav>
 
           <div className="flex items-center space-x-4">
+            {/* Botão de menu dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="text-foreground hover:text-accent">
+                  <MoreVertical className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <a href="/meus-eventos">Meus eventos</a>
+                </DropdownMenuItem>
+                {canCreateEvent && (
+                  <DropdownMenuItem asChild>
+                    <a href="/criar-evento">Criar evento</a>
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
             <ConnectWalletButton />
           </div>
 

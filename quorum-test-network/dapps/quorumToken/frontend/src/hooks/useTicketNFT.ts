@@ -36,7 +36,7 @@ export const useTicketNFT = () => {
         try {
           const ethersModule = await import("ethers");
           const abi = await import("../abis/TicketNFT.json");
-          const contractAddress = import.meta.env.VITE_TICKETNFT_ADDRESS || import.meta.env.VITE_CONTRACT_ADDRESS || "0x05d91B9031A655d08E654177336d08543AC4B711";
+          const contractAddress = import.meta.env.VITE_TICKETNFT_ADDRESS || import.meta.env.VITE_CONTRACT_ADDRESS || "0x5FbDB2315678afecb367f032d93F642f64180aa3";
           
           const provider = new ethersModule.BrowserProvider(window.ethereum);
           const signer = await provider.getSigner();
@@ -86,17 +86,11 @@ export const useTicketNFT = () => {
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
 
         
-        let userAccount;
-        if (accounts.length > 0) {
-          // User already connected, just get the account
-          userAccount = accounts[0];
-        } else {
-          // Request account access
-          const newAccounts = await window.ethereum.request({ 
-            method: 'eth_requestAccounts' 
-          });
-          userAccount = newAccounts[0];
+        if (accounts.length === 0) {
+          throw new Error("Nenhuma conta detectada no MetaMask.");
         }
+
+        const userAccount = accounts[0];
         
         setAccount(userAccount);
 
@@ -317,12 +311,23 @@ export const useTicketNFT = () => {
     }
   };
 
+  const disconnectWallet = () => {
+    setAccount(null);
+    setIsConnected(false);
+    setContract(null);
+    // Limpar dados de autenticação do localStorage
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('wallet_account');
+    toast.success("Carteira desconectada");
+  };
+
   return {
     account,
     isConnected,
     error,
     loading,
     connectWallet,
+    disconnectWallet,
     getOwner,
     getTotalSupply,
     getTickets,

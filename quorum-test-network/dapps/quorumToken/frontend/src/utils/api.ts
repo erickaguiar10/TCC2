@@ -13,7 +13,7 @@ export const apiteste = axios.create({
 // Configuração do cliente Axios
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000,
+  timeout: 120000, // Aumentado para 120 segundos
   headers: {
     'Content-Type': 'application/json',
   },

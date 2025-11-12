@@ -15,6 +15,8 @@ app.use(express.json());
 app.use('/api', createProxyMiddleware({
   target: process.env.BACKEND_URL || `http://${process.env.BACKEND_HOST || 'localhost'}:${process.env.BACKEND_PORT || '8000'}`,
   changeOrigin: true,
+  timeout: 120000, // Aumentado para 120 segundos
+  proxyTimeout: 120000, // Aumentado para 120 segundos
   pathRewrite: {
     '^/api': '', // Remove /api from path before forwarding to backend
   },

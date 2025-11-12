@@ -1,7 +1,6 @@
 import { useTicketNFT } from "../hooks/useTicketNFT";
 import { Button } from "../components/ui/button";
 import { Wallet } from "lucide-react";
-import { useEffect } from "react";
 
 interface ConnectWalletButtonProps {
   onConnect?: () => void;
@@ -13,6 +12,7 @@ export const ConnectWalletButton = ({ onConnect }: ConnectWalletButtonProps) => 
     account, 
     loading, 
     connectWallet,
+    disconnectWallet,
     getOwner 
   } = useTicketNFT();
 
@@ -33,6 +33,10 @@ export const ConnectWalletButton = ({ onConnect }: ConnectWalletButtonProps) => 
     }
   };
 
+  const handleDisconnect = () => {
+    disconnectWallet();
+  };
+
   return (
     <div>
       {isConnected ? (
@@ -43,11 +47,10 @@ export const ConnectWalletButton = ({ onConnect }: ConnectWalletButtonProps) => 
           <Button 
             variant="outline" 
             size="sm"
-            disabled
-            className="pointer-events-auto"
+            onClick={handleDisconnect}
           >
             <Wallet className="h-4 w-4 mr-2" />
-            Conectado
+            Desconectar
           </Button>
         </div>
       ) : (
