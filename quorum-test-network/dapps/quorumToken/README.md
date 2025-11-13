@@ -80,7 +80,7 @@ The application uses the following environment variables:
 - `CONTRACT_ADDRESS` - Address of deployed TicketNFT contract
 - `BACKEND_PORT` - Port for the Python backend (default: 8000)
 - `FRONTEND_PORT` - Port for the React frontend (default: 8080)
-- `PROXY_PORT` - Port for the proxy server (default: 3001)
+- `BACKEND_PORT` - Port for the backend server (default: 8000)
 
 ## Running the Application
 
@@ -108,7 +108,7 @@ python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ### 5. Start the Proxy Server
 ```bash
 npm start
-# This runs the proxy on port 3001
+# This runs the backend on port 8000 and frontend on port 8080
 ```
 
 ### 6. Start the Frontend
@@ -248,5 +248,5 @@ For production deployment:
 
 ### Development Tips:
 - Use `npx hardhat node` for local blockchain development
-- The proxy server runs on port 3001 and routes to backend (8000) and blockchain (8545)
+- The backend server runs on port 8000
 - All API calls from frontend should go through `/api/` route to use proxy

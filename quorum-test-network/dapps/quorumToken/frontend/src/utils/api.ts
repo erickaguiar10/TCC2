@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:3001/api";
+const API_BASE_URL = "http://localhost:8000";
 
 // 🧩 Cria a instância base do axios
 export const apiteste = axios.create({
@@ -105,12 +105,14 @@ export const api = {
   createTicket: (
     eventName: string, 
     price: number, 
-    eventDate: number
+    eventDate: number,
+    imageUrl?: string
   ) => 
     apiClient.post('/ticket/create', {
       event_name: eventName,
       price,
-      event_date: eventDate
+      event_date: eventDate,
+      image_url: imageUrl
     }),
   
   // Comprar ingresso - Novo formato
@@ -119,7 +121,6 @@ export const api = {
     value: number
   ) => 
     apiClient.post(`/ticket/${tokenId}/buy`, {
-      token_id: tokenId,
       value
     }),
   

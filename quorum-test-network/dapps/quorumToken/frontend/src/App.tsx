@@ -8,6 +8,7 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import MeusEventos from "./pages/MeusEventos";
 import CriarEvento from "./pages/CriarEvento";
+import EventDetails from "./pages/EventDetails";
 import Header from "./components/Header";
 import { useTicketNFT } from "./hooks/useTicketNFT";
 import { useState, useEffect } from "react";
@@ -51,6 +52,7 @@ const App = () => {
             <Route path="/eventos/:category" element={<Events />} />
             <Route path="/meus-eventos" element={<MeusEventos />} />
             <Route path="/criar-evento" element={<CriarEvento />} />
+            <Route path="/evento/:id" element={<EventDetails />} />
             <Route path="/login" element={<Login />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

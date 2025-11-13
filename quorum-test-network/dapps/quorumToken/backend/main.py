@@ -19,6 +19,9 @@ from eth_account.messages import encode_defunct
 import time
 from fastapi.middleware.cors import CORSMiddleware
 
+# Carregar variáveis de ambiente
+load_dotenv()
+
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -33,13 +36,12 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 # FastAPI app
 app = FastAPI()
 
-# 🚀 CORS config - Updated for local development and GitHub Codespaces
+# 🚀 CORS config - Updated for local development
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:8080")
-PROXY_URL = os.getenv("PROXY_URL", "http://localhost:3001")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_URL, PROXY_URL, "http://localhost:8080", "http://localhost:3001", "*"],  # Allow both frontend and proxy URLs plus wildcard
+    allow_origins=["*"],  # Allow all origins for direct communication
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -103,15 +105,12 @@ class CreateTicketRequest(BaseModel):
     image_url: Optional[str] = None  # URL da imagem opcional
 
 class BuyTicketRequest(BaseModel):
-    token_id: int
     value: int
 
 class ResellTicketRequest(BaseModel):
-    token_id: int
     new_price: int
 
 class UpdateTicketStatusRequest(BaseModel):
-    token_id: int
     new_status: int  # 0=Disponivel, 1=Vendido, 2=Revenda
 
 class TransactionRequest(BaseModel):
@@ -269,20 +268,28 @@ def create_ticket_endpoint(
     try:
         # Verificar se o usuário é o proprietário do contrato (apenas o proprietário pode criar ingressos)
         owner = get_owner()
+        logger.info(f"Proprietário do contrato: {owner}")
+        logger.info(f"Usuário atual: {current_user}")
+        logger.info(f"Comparação (case-insensitive): {owner.lower() == current_user.lower()}")
         if owner.lower() != current_user.lower():
             raise HTTPException(status_code=403, detail="Apenas o proprietário do contrato pode criar ingressos")
         
-        # Obter a chave privada do usuário (em produção, isso deve ser armazenado de forma segura)
-        user_private_key = os.getenv(f"PRIVATE_KEY_{current_user.lower()}")
+        # Usar a chave privada geral configurada no ambiente
+        # Em um ambiente de produção, cada usuário teria sua própria chave privada segura
+        user_private_key = os.getenv("PRIVATE_KEY")
+        all_env_vars = dict(os.environ)
+        logger.info(f"PRIVATE_KEY do ambiente para criação de ingresso: {'***' if user_private_key else 'NÃO ENCONTRADA'}")
+        logger.info(f"Todos os prefixos de variáveis PRIVATE_KEY: {[k for k in all_env_vars.keys() if 'PRIVATE_KEY' in k]}")
         if not user_private_key:
-            raise HTTPException(status_code=400, detail="Chave privada não encontrada para o usuário")
+            raise HTTPException(status_code=400, detail="Chave privada não configurada no servidor")
 
         receipt = create_ticket(
             request.event_name,
             request.price,
             request.event_date,
             current_user,
-            user_private_key
+            user_private_key,
+            image_url=request.image_url
         )
         
         # Em uma implementação completa, teríamos um banco de dados para armazenar metadados
@@ -310,13 +317,14 @@ def buy_ticket_endpoint(
     current_user: str = Depends(get_current_user)
 ):
     try:
-        # Obter a chave privada do usuário (em produção, isso deve ser armazenado de forma segura)
-        user_private_key = os.getenv(f"PRIVATE_KEY_{current_user.lower()}")
+        # Usar a chave privada geral configurada no ambiente
+        # Em um ambiente de produção, cada usuário teria sua própria chave privada segura
+        user_private_key = os.getenv("PRIVATE_KEY")
         if not user_private_key:
-            raise HTTPException(status_code=400, detail="Chave privada não encontrada para o usuário")
+            raise HTTPException(status_code=400, detail="Chave privada não configurada no servidor")
 
         receipt = buy_ticket(
-            request.token_id,
+            token_id,  # Usar o token_id da URL, não do body
             request.value,
             current_user,
             user_private_key
@@ -333,13 +341,14 @@ def resell_ticket_endpoint(
     current_user: str = Depends(get_current_user)
 ):
     try:
-        # Obter a chave privada do usuário (em produção, isso deve ser armazenado de forma segura)
-        user_private_key = os.getenv(f"PRIVATE_KEY_{current_user.lower()}")
+        # Usar a chave privada geral configurada no ambiente
+        # Em um ambiente de produção, cada usuário teria sua própria chave privada segura
+        user_private_key = os.getenv("PRIVATE_KEY")
         if not user_private_key:
-            raise HTTPException(status_code=400, detail="Chave privada não encontrada para o usuário")
+            raise HTTPException(status_code=400, detail="Chave privada não configurada no servidor")
 
         receipt = resell_ticket(
-            request.token_id,
+            token_id,  # Usar o token_id da URL, não do body
             request.new_price,
             current_user,
             user_private_key
@@ -356,13 +365,14 @@ def update_ticket_status_endpoint(
     current_user: str = Depends(get_current_user)
 ):
     try:
-        # Obter a chave privada do usuário (em produção, isso deve ser armazenado de forma segura)
-        user_private_key = os.getenv(f"PRIVATE_KEY_{current_user.lower()}")
+        # Usar a chave privada geral configurada no ambiente
+        # Em um ambiente de produção, cada usuário teria sua própria chave privada segura
+        user_private_key = os.getenv("PRIVATE_KEY")
         if not user_private_key:
-            raise HTTPException(status_code=400, detail="Chave privada não encontrada para o usuário")
+            raise HTTPException(status_code=400, detail="Chave privada não configurada no servidor")
 
         receipt = update_ticket_status(
-            request.token_id,
+            token_id,  # Usar o token_id da URL, não do body
             request.new_status,
             current_user,
             user_private_key
@@ -421,6 +431,18 @@ async def health_check():
             "status": "unhealthy", 
             "message": f"Erro na conexão com blockchain: {str(e)}"
         }
+
+# Endpoint para verificar variáveis de ambiente
+@app.get("/debug/env")
+async def debug_env():
+    """Endpoint para depuração de variáveis de ambiente"""
+    all_env_vars = dict(os.environ)
+    private_key_vars = {k: ('***' if 'PRIVATE_KEY' in k else v) for k, v in all_env_vars.items() if 'PRIVATE_KEY' in k or 'KEY' in k or 'CONTRACT' in k}
+    return {
+        "private_key_vars": private_key_vars,
+        "rpc_url_set": 'RPC_URL' in all_env_vars,
+        "contract_address_set": 'CONTRACT_ADDRESS' in all_env_vars
+    }
 
 if __name__ == "__main__":
     import uvicorn

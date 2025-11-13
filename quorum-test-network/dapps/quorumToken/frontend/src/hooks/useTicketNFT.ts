@@ -264,10 +264,11 @@ export const useTicketNFT = () => {
   const createTicket = async (
     eventName: string,
     price: number,
-    eventDate: number
+    eventDate: number,
+    imageUrl?: string
   ): Promise<any> => {
     try {
-      const response = await api.createTicket(eventName, price, eventDate);
+      const response = await api.createTicket(eventName, price, eventDate, imageUrl);
       return response.data;
     } catch (error: any) {
       console.error("❌ Erro ao criar ingresso:", error);

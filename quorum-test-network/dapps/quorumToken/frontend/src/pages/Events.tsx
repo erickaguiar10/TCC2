@@ -117,12 +117,9 @@ const Events = () => {
                       year: 'numeric'
                     })
                   : "Data não definida"}
-                location={ticket.owner || "Local não definido"}
+                location={ticket.evento ? `${ticket.evento.split(' ')[0]} Arena` : "Local não definido"}
                 price={ticket.preco
-                  ? new Intl.NumberFormat('pt-BR', {
-                      style: 'currency',
-                      currency: 'BRL'
-                    }).format(Number(ticket.preco) / 1e18)
+                  ? `${(Number(ticket.preco) / 1e18).toFixed(4)} ETH`
                   : "Preço não definido"}
                 category={statusToCategory[ticket.status as number] || "Disponível"}
               />

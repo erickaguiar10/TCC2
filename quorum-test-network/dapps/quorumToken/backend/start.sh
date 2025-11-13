@@ -10,4 +10,4 @@ fi
 pip install -r requirements.txt
 
 # Run the backend server with updated CORS configuration
-uvicorn main:app --host 0.0.0.0 --port ${BACKEND_PORT:-8000} --reload
+uvicorn main:app --host localhost --port ${BACKEND_PORT:-8000} --reload

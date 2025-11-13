@@ -4,11 +4,10 @@
   "description": "A ticket sales DApp integrated with Quorum blockchain",
   "main": "index.js",
   "scripts": {
-    "start": "node proxy.js",
+    "start": "concurrently \"npm run backend\" \"npm run frontend\"",
     "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
-    "backend": "cd backend && python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload",
+    "backend": "cd backend && python -m uvicorn main:app --host localhost --port 8000 --reload",
     "frontend": "cd frontend && npm run dev",
-    "proxy": "node proxy.js",
     "build": "npm run build:backend && npm run build:frontend",
     "build:backend": "cd backend && pip install -r requirements.txt",
     "build:frontend": "cd frontend && npm run build",

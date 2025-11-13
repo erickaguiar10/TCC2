@@ -2,6 +2,7 @@ import { Calendar, MapPin, Ticket } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardFooter } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
+import { Link } from "react-router-dom";
 
 interface EventCardProps {
   id: string;
@@ -14,7 +15,7 @@ interface EventCardProps {
   ticketsLeft?: number;
 }
 
-const EventCard = ({ title, image, date, location, price, category, ticketsLeft }: EventCardProps) => {
+const EventCard = ({ id, title, image, date, location, price, category, ticketsLeft }: EventCardProps) => {
   return (
     <Card className="group overflow-hidden shadow-card hover:shadow-blockchain transition-all duration-300 hover:-translate-y-1">
       <div className="relative overflow-hidden">
@@ -62,13 +63,15 @@ const EventCard = ({ title, image, date, location, price, category, ticketsLeft 
           </span>
         </div>
 
-        <Button
-          size="sm"
-          className="bg-gradient-accent hover:opacity-90 transition-opacity"
-        >
-          <Ticket className="h-4 w-4 mr-2" />
-          Ver Ingressos
-        </Button>
+        <Link to={`/evento/${id}`}>
+          <Button
+            size="sm"
+            className="bg-gradient-accent hover:opacity-90 transition-opacity"
+          >
+            <Ticket className="h-4 w-4 mr-2" />
+            Ver Detalhes
+          </Button>
+        </Link>
       </CardFooter>
     </Card>
   );

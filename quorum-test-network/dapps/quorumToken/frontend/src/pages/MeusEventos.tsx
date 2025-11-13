@@ -75,10 +75,7 @@ const MeusEventos = () => {
                         <p>Categoria: {statusToCategory[ticket.status as number] || "Disponível"}</p>
                         <p>
                           Preço: {ticket.preco
-                            ? new Intl.NumberFormat('pt-BR', {
-                                style: 'currency',
-                                currency: 'BRL'
-                              }).format(Number(ticket.preco) / 1e18)
+                            ? `${(Number(ticket.preco) / 1e18).toFixed(4)} ETH`
                             : "Preço não definido"}
                         </p>
                         <Button className="mt-4 w-full">Ver Detalhes</Button>
