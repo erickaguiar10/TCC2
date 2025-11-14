@@ -62,13 +62,13 @@ const EventDetails = () => {
   // Mapear status para texto
   const statusText = {
     0: "Disponível",
-    1: "Vendido", 
+    1: "Vendido",
     2: "Revenda"
   }[ticket?.status || 0];
 
   const statusColor = {
     0: "text-green-600 bg-green-100",
-    1: "text-red-600 bg-red-100", 
+    1: "text-red-600 bg-red-100",
     2: "text-yellow-600 bg-yellow-100"
   }[ticket?.status || 0];
 
@@ -91,14 +91,6 @@ const EventDetails = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Imagem do evento */}
-        <div className="mb-8 rounded-xl overflow-hidden shadow-lg">
-          <img 
-            src={ticket.imagem || `https://placehold.co/800x400?text=${encodeURIComponent(ticket.evento)}`}
-            alt={ticket.evento}
-            className="w-full h-64 md:h-96 object-cover"
-          />
-        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Informações principais do evento */}
@@ -116,7 +108,7 @@ const EventDetails = () => {
                 <div className="flex items-center space-x-2 text-muted-foreground">
                   <Calendar className="h-5 w-5" />
                   <span>
-                    {ticket.dataEvento 
+                    {ticket.dataEvento
                       ? new Date(ticket.dataEvento * 1000).toLocaleDateString('pt-BR', {
                           weekday: 'long',
                           day: '2-digit',
@@ -140,7 +132,7 @@ const EventDetails = () => {
                 <div className="pt-4">
                   <h3 className="text-lg font-semibold mb-2">Descrição</h3>
                   <p className="text-muted-foreground">
-                    Bem-vindo ao {ticket.evento}! Um evento imperdível com as melhores atrações e experiências únicas. 
+                    Bem-vindo ao {ticket.evento}! Um evento imperdível com as melhores atrações e experiências únicas.
                     Não perca essa oportunidade de participar deste grande evento.
                   </p>
                 </div>
@@ -175,8 +167,8 @@ const EventDetails = () => {
                 </div>
 
                 {ticket.status === 0 && isConnected && account && (
-                  <Button 
-                    size="lg" 
+                  <Button
+                    size="lg"
                     className="w-full bg-gradient-accent hover:opacity-90 transition-opacity"
                     onClick={handleBuyTicket}
                     disabled={isBuying}
@@ -193,8 +185,8 @@ const EventDetails = () => {
                 )}
 
                 {ticket.status === 2 && (
-                  <Button 
-                    size="lg" 
+                  <Button
+                    size="lg"
                     className="w-full bg-gradient-accent hover:opacity-90 transition-opacity"
                     onClick={handleBuyTicket}
                     disabled={isBuying}

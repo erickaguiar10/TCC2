@@ -57,7 +57,7 @@ const CriarEvento = () => {
       }
 
       // Chama a função real para criar o evento via API
-      await createTicket(nomeEvento, Math.floor(priceInWei), timestamp, imageUrl);
+      await createTicket(nomeEvento, Math.floor(priceInWei), timestamp);
 
       toast.success("Evento criado com sucesso!");
 
@@ -144,54 +144,6 @@ const CriarEvento = () => {
                     required 
                   />
                 </div>
-                
-                {/* Campo de upload de imagem */}
-                <div className="space-y-2">
-                  <Label htmlFor="imagem">Imagem do Evento</Label>
-                  <div className="flex flex-col space-y-4">
-                    <div className="flex items-center space-x-2">
-                      <label 
-                        htmlFor="imagem-upload" 
-                        className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:bg-gray-50 transition-colors"
-                      >
-                        <Upload className="h-8 w-8 text-gray-400" />
-                        <p className="mt-2 text-sm text-gray-600">
-                          Clique para fazer upload de uma imagem
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          PNG, JPG, GIF até 5MB
-                        </p>
-                        <Input 
-                          id="imagem-upload"
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={handleImagemChange}
-                        />
-                      </label>
-                    </div>
-                    
-                    {imagemPreview && (
-                      <div className="relative mt-2">
-                        <img 
-                          src={imagemPreview} 
-                          alt="Pré-visualização" 
-                          className="max-h-48 rounded-lg object-cover"
-                        />
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="sm"
-                          className="absolute top-2 right-2"
-                          onClick={removerImagem}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
                 <Button type="submit" variant="hero" className="w-full" disabled={!isConnected}>
                   {isConnected ? "Criar Evento" : "Conecte sua carteira primeiro"}
                 </Button>

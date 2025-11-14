@@ -29,7 +29,7 @@ const Events = () => {
 
   useEffect(() => {
     fetchAllTickets();
-    
+
     // Se houver uma categoria específica na URL, seleciona essa categoria
     if (category && categories.includes(category)) {
       setSelectedCategory(category);
@@ -109,7 +109,6 @@ const Events = () => {
                 key={ticket.id}
                 id={ticket.id.toString()}
                 title={ticket.evento || `Ingresso #${ticket.id}`}
-                image={ticket.imagem || (ticket.evento ? `https://placehold.co/400x200?text=${encodeURIComponent(ticket.evento)}` : "https://placehold.co/400x200?text=Evento")}
                 date={ticket.dataEvento
                   ? new Date(ticket.dataEvento * 1000).toLocaleDateString('pt-BR', {
                       day: '2-digit',

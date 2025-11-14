@@ -7,7 +7,6 @@ import { Link } from "react-router-dom";
 interface EventCardProps {
   id: string;
   title: string;
-  image?: string;
   date: string;
   location: string;
   price: string;
@@ -15,15 +14,10 @@ interface EventCardProps {
   ticketsLeft?: number;
 }
 
-const EventCard = ({ id, title, image, date, location, price, category, ticketsLeft }: EventCardProps) => {
+const EventCard = ({ id, title, date, location, price, category, ticketsLeft }: EventCardProps) => {
   return (
     <Card className="group overflow-hidden shadow-card hover:shadow-blockchain transition-all duration-300 hover:-translate-y-1">
       <div className="relative overflow-hidden">
-        <img
-          src={image || "https://placehold.co/400x200?text=Evento"}
-          alt={title}
-          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-        />
         <div className="absolute top-3 left-3">
           <Badge variant="secondary" className="bg-primary text-primary-foreground">
             {category}

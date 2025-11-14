@@ -8,13 +8,13 @@ import { toast } from "../components/ui/sonner";
 const MeusEventos = () => {
   const { isConnected, account, getTicketsByOwner, loading, error } = useTicketNFT();
   const [userTickets, setUserTickets] = useState<Ticket[]>([]);
-  
+
   useEffect(() => {
     if (isConnected && account) {
       fetchUserTickets();
     }
   }, [isConnected, account]);
-  
+
   const fetchUserTickets = async () => {
     try {
       if (account) {
@@ -26,7 +26,7 @@ const MeusEventos = () => {
       toast.error("Erro ao buscar seus eventos");
     }
   };
-  
+
   // Mapear status para categorias
   const statusToCategory: Record<number, string> = {
     0: "Disponível",
@@ -42,7 +42,7 @@ const MeusEventos = () => {
             <h1 className="text-3xl font-bold">Meus Eventos</h1>
             <p className="text-muted-foreground">Gerencie os eventos que você criou ou comprou ingressos</p>
           </div>
-          
+
           {isConnected ? (
             <>
               {loading ? (
@@ -67,7 +67,7 @@ const MeusEventos = () => {
                                 month: '2-digit',
                                 year: 'numeric'
                               })
-                            : "Data não definida"} 
+                            : "Data não definida"}
                           {ticket.owner ? ` - ${ticket.owner.substring(0, 6)}...${ticket.owner.substring(ticket.owner.length - 4)}` : ""}
                         </CardDescription>
                       </CardHeader>
@@ -78,7 +78,7 @@ const MeusEventos = () => {
                             ? `${(Number(ticket.preco) / 1e18).toFixed(4)} ETH`
                             : "Preço não definido"}
                         </p>
-                        <Button className="mt-4 w-full">Ver Detalhes</Button>
+                        <Button className="mt-4 w-full" onClick={() => window.location.href = `/evento/${ticket.id}`}>Ver Detalhes</Button>
                       </CardContent>
                     </Card>
                   ))}

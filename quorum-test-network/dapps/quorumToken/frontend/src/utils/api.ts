@@ -42,7 +42,7 @@ apiClient.interceptors.response.use(
       if (window.location.pathname !== '/login') {
         localStorage.removeItem('access_token');
         // Idealmente, isso deveria usar o router do React, mas window.location funciona
-        // window.location.href = '/login'; 
+        // window.location.href = '/login';
         console.error("Token inválido ou expirado.");
       }
     }
@@ -60,7 +60,6 @@ export interface Ticket {
   preco?: string;
   dataEvento?: number;
   status?: number;
-  imagem?: string;
 }
 
 export interface TicketDetails extends Ticket {
@@ -74,71 +73,70 @@ export interface TicketDetails extends Ticket {
 export const api = {
   // Autenticação
   // ALTERAÇÃO: A função agora aceita e envia o 'timestamp'
-  login: (walletAddress: string, signature: string, timestamp: string) => 
-    apiClient.post('/login', { 
-      wallet_address: walletAddress, 
+  login: (walletAddress: string, signature: string, timestamp: string) =>
+    apiClient.post('/login', {
+      wallet_address: walletAddress,
       signature,
       timestamp // Enviando o timestamp para o backend
     }),
-  
+
   // Obter informações do contrato
   getOwner: () => apiClient.get('/owner'),
   getTotalSupply: () => apiClient.get('/total-supply'),
-  
+
   // Obter ingressos
-  getTickets: (start: number = 0, limit: number = 100) => 
+  getTickets: (start: number = 0, limit: number = 100) =>
     apiClient.get('/tickets', { params: { start, limit } }),
-  
-  getTicket: (tokenId: number) => 
+
+  getTicket: (tokenId: number) =>
     apiClient.get(`/ticket/${tokenId}`),
-  
-  getTicketStatus: (tokenId: number) => 
+
+  getTicketStatus: (tokenId: number) =>
     apiClient.get(`/ticket/${tokenId}/status`),
-  
-  getEventDate: (tokenId: number) => 
+
+  getEventDate: (tokenId: number) =>
     apiClient.get(`/ticket/${tokenId}/event-date`),
-  
-  getTicketsByOwner: (ownerAddress: string) => 
+
+  getTicketsByOwner: (ownerAddress: string) =>
     apiClient.get(`/tickets/owner/${ownerAddress}`),
-  
+
   // Criar ingresso (apenas owner) - Novo formato
   createTicket: (
-    eventName: string, 
-    price: number, 
+    eventName: string,
+    price: number,
     eventDate: number,
     imageUrl?: string
-  ) => 
+  ) =>
     apiClient.post('/ticket/create', {
       event_name: eventName,
       price,
-      event_date: eventDate,
-      image_url: imageUrl
+      event_date: eventDate
     }),
-  
+
   // Comprar ingresso - Novo formato
   buyTicket: (
     tokenId: number,
     value: number
-  ) => 
+  ) =>
     apiClient.post(`/ticket/${tokenId}/buy`, {
       value
     }),
-  
+
   // Revender ingresso - Novo formato
   resellTicket: (
     tokenId: number,
     newPrice: number
-  ) => 
+  ) =>
     apiClient.post(`/ticket/${tokenId}/resell`, {
       token_id: tokenId,
       new_price: newPrice
     }),
-  
+
   // Atualizar status (apenas owner) - Novo formato
   updateTicketStatus: (
     tokenId: number,
     newStatus: number
-  ) => 
+  ) =>
     apiClient.post(`/ticket/${tokenId}/update-status`, {
       token_id: tokenId,
       new_status: newStatus

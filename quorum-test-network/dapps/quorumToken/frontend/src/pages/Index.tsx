@@ -23,7 +23,7 @@ const Index = () => {
   // Categorias de eventos
   const categories = [
     "Todos",
-    "Disponível", 
+    "Disponível",
     "Vendido",
     "Revenda"
   ];
@@ -46,14 +46,14 @@ const Index = () => {
 
   // Filtrar tickets
   const filteredTickets = allTickets.filter(ticket => {
-    const matchesSearch = 
+    const matchesSearch =
       (ticket.evento && ticket.evento.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (ticket.owner && ticket.owner.toLowerCase().includes(searchTerm.toLowerCase()));
-    
+
     const ticketCategory = statusToCategory[ticket.status as number] || "Disponível";
-    const matchesCategory = 
+    const matchesCategory =
       selectedCategory === "Todos" || ticketCategory === selectedCategory;
-    
+
     return matchesSearch && matchesCategory;
   });
 
@@ -61,7 +61,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <HeroSection />
       <BlockchainFeatures />
-      
+
       {/* All Events Section */}
       <section className="py-16 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -74,11 +74,11 @@ const Index = () => {
                 Descubra experiências únicas com a garantia da tecnologia blockchain
               </p>
             </div>
-            
-            
-          
+
+
+
           </div>
-          
+
           <div className="flex flex-wrap gap-2 mb-6">
             {categories.map((category) => (
               <Button
@@ -91,13 +91,13 @@ const Index = () => {
               </Button>
             ))}
           </div>
-          
+
           {error && (
             <div className="p-4 bg-red-100 text-red-700 rounded-md mb-6">
               Erro: {error}
             </div>
           )}
-          
+
           {loading ? (
             <div className="text-center py-12">
               <p>Carregando eventos...</p>
@@ -111,31 +111,27 @@ const Index = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredTickets.map((ticket) => (
-                <EventCard 
+                <EventCard
                   key={ticket.id}
                   id={ticket.id.toString()}
                   title={ticket.evento || `Ingresso #${ticket.id}`}
-                  image={ticket.evento ? `https://placehold.co/400x200?text=${encodeURIComponent(ticket.evento)}` : "https://placehold.co/400x200?text=Evento"}
-                  date={ticket.dataEvento 
+                  date={ticket.dataEvento
                     ? new Date(ticket.dataEvento * 1000).toLocaleDateString('pt-BR', {
                         day: '2-digit',
                         month: '2-digit',
                         year: 'numeric'
                       })
                     : "Data não definida"}
-                  location={ticket.owner || "Local não definido"}
-                  price={ticket.preco 
-                    ? new Intl.NumberFormat('pt-BR', {
-                        style: 'currency',
-                        currency: 'BRL'
-                      }).format(Number(ticket.preco) / 1e18)
+                  location={ticket.evento ? `${ticket.evento.split(' ')[0]} Arena` : "Local não definido"}
+                  price={ticket.preco
+                    ? `${(Number(ticket.preco) / 1e18).toFixed(4)} ETH`
                     : "Preço não definido"}
                   category={statusToCategory[ticket.status as number] || "Disponível"}
                 />
               ))}
             </div>
           )}
-          
+
           {filteredTickets.length > 0 && (
             <div className="text-center mt-10">
               <Button variant="outline" size="lg">

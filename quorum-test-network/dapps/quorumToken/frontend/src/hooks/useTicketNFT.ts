@@ -37,7 +37,7 @@ export const useTicketNFT = () => {
           const ethersModule = await import("ethers");
           const abi = await import("../abis/TicketNFT.json");
           const contractAddress = import.meta.env.VITE_TICKETNFT_ADDRESS || import.meta.env.VITE_CONTRACT_ADDRESS || "0x5FbDB2315678afecb367f032d93F642f64180aa3";
-          
+
           const provider = new ethersModule.BrowserProvider(window.ethereum);
           const signer = await provider.getSigner();
           const contractInstance = new ethersModule.Contract(
@@ -45,7 +45,7 @@ export const useTicketNFT = () => {
             abi.default.abi,
             signer
           );
-          
+
           setContract(contractInstance);
         } catch (error) {
           console.error("❌ Erro ao inicializar contrato:", error);
@@ -79,19 +79,19 @@ export const useTicketNFT = () => {
   const connectWallet = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       if (typeof window !== "undefined" && window.ethereum) {
         // Check if user has already authorized the app
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
 
-        
+
         if (accounts.length === 0) {
           throw new Error("Nenhuma conta detectada no MetaMask.");
         }
 
         const userAccount = accounts[0];
-        
+
         setAccount(userAccount);
 
         const ethersModule = await import("ethers");
@@ -101,7 +101,7 @@ export const useTicketNFT = () => {
         // ALTERAÇÃO: Gerar mensagem de login com timestamp como string
         const timestamp = Date.now().toString();
         const message = `Login em ${timestamp}`;
-        
+
         // Sign the message using the connected wallet - ensure proper encoding
         const signature = await signer.signMessage(message);
 
@@ -114,14 +114,14 @@ export const useTicketNFT = () => {
         localStorage.setItem('wallet_account', userAccount);
 
         setIsConnected(true);
-        
+
         toast.success("Carteira conectada com sucesso!");
       } else {
         throw new Error("MetaMask não detectado. Por favor, instale o MetaMask para continuar.");
       }
     } catch (error: any) {
       console.error("❌ Erro ao conectar carteira:", error);
-      
+
       // Tratar diferentes tipos de erro
       let errorMessage = "Erro ao conectar carteira";
       // Verifica se o erro é do axios e tem uma resposta do backend
@@ -136,7 +136,7 @@ export const useTicketNFT = () => {
       } else {
         errorMessage = error.message || errorMessage;
       }
-      
+
       setError(errorMessage);
       toast.error(errorMessage);
       setIsConnected(false);
@@ -196,7 +196,7 @@ export const useTicketNFT = () => {
       if (!contract) {
         throw new Error("Contrato não inicializado. Conecte sua carteira primeiro.");
       }
-      
+
       const tx = await contract.criarIngresso(eventName, price, eventDate);
       const receipt = await tx.wait();
       return receipt;
@@ -214,7 +214,7 @@ export const useTicketNFT = () => {
       if (!contract) {
         throw new Error("Contrato não inicializado. Conecte sua carteira primeiro.");
       }
-      
+
       const tx = await contract.comprarIngresso(tokenId, { value: value });
       const receipt = await tx.wait();
       return receipt;
@@ -232,7 +232,7 @@ export const useTicketNFT = () => {
       if (!contract) {
         throw new Error("Contrato não inicializado. Conecte sua carteira primeiro.");
       }
-      
+
       const tx = await contract.revenderIngresso(tokenId, newPrice);
       const receipt = await tx.wait();
       return receipt;
@@ -250,7 +250,7 @@ export const useTicketNFT = () => {
       if (!contract) {
         throw new Error("Contrato não inicializado. Conecte sua carteira primeiro.");
       }
-      
+
       const tx = await contract.atualizarStatus(tokenId, newStatus);
       const receipt = await tx.wait();
       return receipt;
@@ -264,14 +264,29 @@ export const useTicketNFT = () => {
   const createTicket = async (
     eventName: string,
     price: number,
-    eventDate: number,
-    imageUrl?: string
+    eventDate: number
   ): Promise<any> => {
     try {
-      const response = await api.createTicket(eventName, price, eventDate, imageUrl);
-      return response.data;
+      // Se estivermos no frontend e tivermos um contrato inicializado, usar o método direto
+      if (contract && isConnected) {
+        return await createTicketDirect(eventName, price, eventDate);
+      } else {
+        // Caso contrário, usar o backend
+        const response = await api.createTicket(eventName, price, eventDate);
+        return response.data;
+      }
     } catch (error: any) {
       console.error("❌ Erro ao criar ingresso:", error);
+      // Se falhar com o método direto, tentar com o backend
+      if (isConnected) {
+        try {
+          const response = await api.createTicket(eventName, price, eventDate);
+          return response.data;
+        } catch (backendError) {
+          console.error("❌ Erro ao criar ingresso via backend:", backendError);
+          throw error;
+        }
+      }
       throw error;
     }
   };
@@ -281,10 +296,26 @@ export const useTicketNFT = () => {
     value: number
   ): Promise<any> => {
     try {
-      const response = await api.buyTicket(tokenId, value);
-      return response.data;
+      // Se estivermos no frontend e tivermos um contrato inicializado, usar o método direto
+      if (contract && isConnected) {
+        return await buyTicketDirect(tokenId, value);
+      } else {
+        // Caso contrário, usar o backend
+        const response = await api.buyTicket(tokenId, value);
+        return response.data;
+      }
     } catch (error: any) {
       console.error("❌ Erro ao comprar ingresso:", error);
+      // Se falhar com o método direto, tentar com o backend
+      if (isConnected) {
+        try {
+          const response = await api.buyTicket(tokenId, value);
+          return response.data;
+        } catch (backendError) {
+          console.error("❌ Erro ao comprar ingresso via backend:", backendError);
+          throw error;
+        }
+      }
       throw error;
     }
   };
@@ -294,10 +325,26 @@ export const useTicketNFT = () => {
     newPrice: number
   ): Promise<any> => {
     try {
-      const response = await api.resellTicket(tokenId, newPrice);
-      return response.data;
+      // Se estivermos no frontend e tivermos um contrato inicializado, usar o método direto
+      if (contract && isConnected) {
+        return await resellTicketDirect(tokenId, newPrice);
+      } else {
+        // Caso contrário, usar o backend
+        const response = await api.resellTicket(tokenId, newPrice);
+        return response.data;
+      }
     } catch (error: any) {
       console.error("❌ Erro ao revender ingresso:", error);
+      // Se falhar com o método direto, tentar com o backend
+      if (isConnected) {
+        try {
+          const response = await api.resellTicket(tokenId, newPrice);
+          return response.data;
+        } catch (backendError) {
+          console.error("❌ Erro ao revender ingresso via backend:", backendError);
+          throw error;
+        }
+      }
       throw error;
     }
   };
@@ -337,7 +384,7 @@ export const useTicketNFT = () => {
     buyTicket,
     resellTicket,
     getTicketsByOwner,
-    // Direct contract methods 
+    // Direct contract methods
     createTicketDirect,
     buyTicketDirect,
     resellTicketDirect,

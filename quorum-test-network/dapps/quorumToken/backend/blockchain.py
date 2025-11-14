@@ -24,11 +24,11 @@ ticket_metadata = {}
 def initialize_blockchain():
     """Função para inicializar a conexão com o blockchain sob demanda"""
     global w3, contract, contract_address, abi
-    
+
     if w3 is not None and contract is not None:
         # Já inicializado
         return True
-    
+
     try:
         # Conectar-se ao nó Ethereum
         rpc_url = os.getenv("RPC_URL", "http://localhost:8545")
@@ -69,7 +69,7 @@ def initialize_blockchain():
         # Criar instância do contrato
         contract = w3.eth.contract(address=contract_address, abi=abi)
         logger.info("Instância do contrato criada com sucesso")
-        
+
         return True
     except Exception as e:
         logger.error(f"Erro ao inicializar blockchain: {str(e)}")
@@ -100,22 +100,13 @@ def get_ticket_details(token_id):
         status = contract.functions.statusIngresso(token_id).call()
         event_date = contract.functions.dataEvento(token_id).call()
 
-        # Verificar se temos metadados personalizados para este ticket (como URL de imagem)
-        image_url = None
-        if token_id in ticket_metadata and 'image_url' in ticket_metadata[token_id]:
-            image_url = ticket_metadata[token_id]['image_url']
-        else:
-            # Simular URL de imagem com base no ID do ticket (fallback)
-            image_url = f"https://placehold.co/600x400?text=Evento+{token_id}"
-
         return {
             "id": token_id,
             "owner": owner,
             "evento": ticket_data[0],  # Nome do evento
             "preco": str(ticket_data[1]),  # Preço do evento
             "dataEvento": ticket_data[2],  # Data do evento
-            "status": status,
-            "imagem": image_url  # Adicionando campo de imagem
+            "status": status
         }
     except Exception as e:
         print(f"Erro ao obter detalhes do ingresso: {e}")
@@ -145,8 +136,6 @@ def get_tickets_by_owner(owner_address):
         for token_id in ticket_ids:
             ticket = get_ticket_details(token_id)
             if ticket:
-                # Adicionar URL de imagem simulada
-                ticket["imagem"] = f"https://placehold.co/600x400?text=Evento+{token_id}"
                 tickets.append(ticket)
 
         return tickets
@@ -169,8 +158,6 @@ def get_all_tickets(start=0, limit=100):
                 token_id = contract.functions.tokenByIndex(i).call()
                 ticket = get_ticket_details(token_id)
                 if ticket:
-                    # Adicionar URL de imagem simulada
-                    ticket["imagem"] = f"https://placehold.co/600x400?text=Evento+{token_id}"
                     tickets.append(ticket)
             except:
                 # Se o token não existir no índice (pode ter sido queimado), continuar
@@ -185,7 +172,7 @@ def create_ticket(event_name, price, event_date, owner_address, private_key, ima
     """Criar novo ingresso (só pode ser feito pelo proprietário do contrato)"""
     if not initialize_blockchain():
         raise Exception("Falha ao inicializar conexão com blockchain")
-        
+
     # Obter a conta com a chave privada
     account = Account.from_key(private_key)
     address = account.address
@@ -225,7 +212,7 @@ def create_ticket(event_name, price, event_date, owner_address, private_key, ima
             total_supply = contract.functions.totalSupply().call()
             # O token mais recente deve ser o total_supply (já que é incrementado após criação)
             new_token_id = total_supply
-            
+
             # Armazenar os metadados
             ticket_metadata[new_token_id] = {
                 'image_url': image_url,
@@ -241,7 +228,7 @@ def buy_ticket(token_id, value, buyer_address, private_key):
     """Comprar um ingresso"""
     if not initialize_blockchain():
         raise Exception("Falha ao inicializar conexão com blockchain")
-        
+
     # Obter a conta com a chave privada
     account = Account.from_key(private_key)
     address = account.address
@@ -274,7 +261,7 @@ def resell_ticket(token_id, new_price, owner_address, private_key):
     """Revender um ingresso"""
     if not initialize_blockchain():
         raise Exception("Falha ao inicializar conexão com blockchain")
-        
+
     # Obter a conta com a chave privada
     account = Account.from_key(private_key)
     address = account.address
@@ -310,7 +297,7 @@ def update_ticket_status(token_id, new_status, owner_address, private_key):
     """Atualizar status de um ingresso (só pode ser feito pelo proprietário do contrato)"""
     if not initialize_blockchain():
         raise Exception("Falha ao inicializar conexão com blockchain")
-        
+
     # Obter a conta com a chave privada
     account = Account.from_key(private_key)
     address = account.address
