@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useTicketNFT } from "../hooks/useTicketNFT";
 import { formatEther } from "ethers"; // ethers v6+
+import { Box, Heading, Text, List, ListItem, Flex, Spacer, Badge, Tag, Button } from "@chakra-ui/react";
 
 interface Ticket {
   id: string;
@@ -50,19 +51,42 @@ export const AllTickets = () => {
   }, [contract]);
 
   return (
-    <div>
-      <h2>Todos os Ingressos</h2>
-      <ol>
+    <Box p={4} borderWidth="1px" borderRadius="lg" boxShadow="md">
+      <Flex justify="space-between" align="center" mb={4}>
+        <Heading as="h2" size="md">Todos os Ingressos</Heading>
+        <Button size="sm" onClick={fetchAllTickets}>
+          Atualizar
+        </Button>
+      </Flex>
+      <List spacing={3}>
         {tickets.map((ticket, index) => (
-          <li key={ticket.id}>
-            <strong>Evento:</strong> {ticket.evento} |{" "}
-            <strong>Data:</strong> {ticket.data} |{" "}
-            <strong>Preço:</strong> {ticket.preco} ETH |{" "}
-            <strong>Dono:</strong> {ticket.dono} |{" "}
-            <strong>Situação:</strong> {ticket.status}
-          </li>
+          <ListItem key={ticket.id}>
+            <Flex align="center">
+              <Box>
+                <Flex align="center" mb={1}>
+                  <Text fontWeight="bold" mr={2}>{ticket.evento}</Text>
+                  <Tag size="sm" colorScheme="blue" variant="outline">
+                    ID: {ticket.id}
+                  </Tag>
+                </Flex>
+                <Text fontSize="sm">Data: {ticket.data}</Text>
+                <Text fontSize="sm">Preço: {ticket.preco} ETH</Text>
+                <Text fontSize="xs" color="gray.500">Dono: {ticket.dono.slice(0, 6)}...{ticket.dono.slice(-4)}</Text>
+              </Box>
+              <Spacer />
+              <Badge 
+                colorScheme={
+                  ticket.status === "Disponível" ? "green" : 
+                  ticket.status === "Vendido" ? "red" : "yellow"
+                } 
+                ml={2}
+              >
+                {ticket.status}
+              </Badge>
+            </Flex>
+          </ListItem>
         ))}
-      </ol>
-    </div>
+      </List>
+    </Box>
   );
 };

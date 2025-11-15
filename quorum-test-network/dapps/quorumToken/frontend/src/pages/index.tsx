@@ -6,19 +6,20 @@ import { BuyTicket } from "../components/BuyTicket";
 import { ResellTicket } from "../components/ResellTicket";
 import { MyTickets } from "components/MyTickets";
 import { AllTickets } from "components/AllTickets";
+import { Container, Heading, SimpleGrid } from "@chakra-ui/react";
 
 const Home: NextPage = () => {
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-4">TicketNFT DApp</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <Container maxW="container.xl" p={4}>
+      <Heading as="h1" size="xl" mb={6} textAlign="center">Ticket Main</Heading>
+      <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
         <MyTickets />
         <AllTickets/>
         <CreateTicket />
         <BuyTicket />
         <ResellTicket />
-      </div>
-    </div>
+      </SimpleGrid>
+    </Container>
   );
 };
 
