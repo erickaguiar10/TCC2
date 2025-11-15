@@ -1,0 +1,13 @@
+
+> vite_react_shadcn_ts@0.0.0 dev
+> vite --host 0.0.0.0 --port 8080
+
+Port 8080 is in use, trying another one...
+
+  VITE v5.4.19  ready in 304 ms
+
+  ➜  Local:   http://localhost:8081/
+  ➜  Network: http://10.0.3.148:8081/
+  ➜  Network: http://172.16.239.1:8081/
+11:31:03 PM [vite] .env.local changed, restarting server...
+11:31:03 PM [vite] server restarted.
