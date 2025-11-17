@@ -1,7 +1,9 @@
 // hardhat.config.ts
-
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
+import * as dotenv from "dotenv";
+
+dotenv.config();
 
 const config: HardhatUserConfig = {
   networks: {
@@ -12,13 +14,12 @@ const config: HardhatUserConfig = {
     },
     // rede Quorum/Quickstart local (RPC em 127.0.0.1:8545)
     quickstart: {
-      url: "http://127.0.0.1:8545",
+      url: process.env.RPC_URL || "http://127.0.0.1:8545",
       chainId: 1337,
       accounts: [
-        "0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63",
-        "0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3",
-        "0xae6ae8e5ccbfb04590405997ee2d52d2b330726137b875053c36d94e974d162f",
-        
+        process.env.PRIVATE_KEY_1 || "0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63",
+        process.env.PRIVATE_KEY_2 || "0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3",
+        process.env.PRIVATE_KEY_3 || "0xae6ae8e5ccbfb04590405997ee2d52d2b330726137b875053c36d94e974d162f",
       ],
       gasPrice: 0, // Quorum costuma usar gasPrice = 0
     },

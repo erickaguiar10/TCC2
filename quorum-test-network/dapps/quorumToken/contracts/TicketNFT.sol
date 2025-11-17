@@ -3,6 +3,7 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 
 contract TicketNFT is ERC721, Ownable {
     uint256 public nextTokenId = 1;
@@ -18,18 +19,23 @@ contract TicketNFT is ERC721, Ownable {
 
     mapping(uint256 => Ingresso) public ingressos;
     mapping(uint256 => bool) private criado;
+    // Mapping to track tokens per user for gas efficiency
+    mapping(address => uint256[]) private tokensPorUsuario;
 
     event IngressoCriado(uint256 indexed tokenId, string evento, uint256 preco);
     event IngressoVendido(uint256 indexed tokenId, address indexed comprador, uint256 preco);
     event IngressoRevenda(uint256 indexed tokenId, uint256 novoPreco);
 
-    constructor() ERC721("TicketNFT", "TCKT") {}
+    constructor() ERC721("TicketNFT", "TCKT") Ownable(msg.sender) {}
 
     function criarIngresso(
         string memory _evento,
         uint256 _preco,
         uint256 _dataEvento
     ) external onlyOwner {
+        // Fix: Validate that event date is in the future
+        require(_dataEvento > block.timestamp, "Data do evento deve ser futura");
+
         uint256 tokenId = nextTokenId++;
         _safeMint(owner(), tokenId);
 
@@ -40,6 +46,9 @@ contract TicketNFT is ERC721, Ownable {
             status: Status.Disponivel
         });
         criado[tokenId] = true;
+
+        // Add token to owner's collection
+        tokensPorUsuario[owner()].push(tokenId);
 
         emit IngressoCriado(tokenId, _evento, _preco);
     }
@@ -53,9 +62,17 @@ contract TicketNFT is ERC721, Ownable {
         require(msg.value >= ingresso.preco, "Valor insuficiente");
         require(vendedor != msg.sender, "Voce ja eh dono");
 
+        // Fix: Apply CEI pattern (Checks-Effects-Interactions)
+        // Effects first: Update state before external call
         ingresso.status = Status.Vendido;
-        payable(vendedor).transfer(msg.value);
         _transfer(vendedor, msg.sender, tokenId);
+        
+        // Update token mapping for the new owner
+        _removeTokenFromOwner(vendedor, tokenId);
+        tokensPorUsuario[msg.sender].push(tokenId);
+
+        // Interactions last: External call after state update
+        Address.sendValue(payable(vendedor), msg.value);
 
         emit IngressoVendido(tokenId, msg.sender, ingresso.preco);
     }
@@ -86,24 +103,8 @@ contract TicketNFT is ERC721, Ownable {
     }
 
     function ingressosDoUsuario(address usuario) external view returns (uint256[] memory) {
-        uint256 total = nextTokenId - 1;
-        uint256 count = 0;
-
-        for (uint256 i = 1; i <= total; i++) {
-            if (_exists(i) && ownerOf(i) == usuario) {
-                count++;
-            }
-        }
-
-        uint256[] memory tokens = new uint256[](count);
-        uint256 index = 0;
-        for (uint256 i = 1; i <= total; i++) {
-            if (_exists(i) && ownerOf(i) == usuario) {
-                tokens[index++] = i;
-            }
-        }
-
-        return tokens;
+        // Fix: Return tokens directly from the user mapping for gas efficiency
+        return tokensPorUsuario[usuario];
     }
 
     function listarIngressos() external view returns (uint256[] memory) {
@@ -112,11 +113,27 @@ contract TicketNFT is ERC721, Ownable {
         uint256 index = 0;
 
         for (uint256 i = 1; i <= total; i++) {
-            if (_exists(i)) {
+            if (criado[i]) {
                 tokens[index++] = i;
             }
         }
 
         return tokens;
+    }
+
+    // Helper function to remove token from owner's collection
+    function _removeTokenFromOwner(address owner, uint256 tokenId) private {
+        uint256[] storage tokens = tokensPorUsuario[owner];
+        uint256 len = tokens.length;
+        
+        for (uint256 i = 0; i < len; i++) {
+            if (tokens[i] == tokenId) {
+                // Move last element to current position
+                tokens[i] = tokens[len - 1];
+                // Remove last element
+                tokens.pop();
+                break;
+            }
+        }
     }
 }

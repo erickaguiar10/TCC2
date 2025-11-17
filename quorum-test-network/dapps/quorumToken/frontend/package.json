@@ -18,12 +18,14 @@
     "framer-motion": "^10.18.0",
     "next": "13.4.19",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "react-icons": "^5.5.0"
   },
   "devDependencies": {
     "@types/node": "20.5.4",
     "@types/react": "18.2.21",
     "@types/react-dom": "18.2.7",
+    "@types/react-icons": "^3.0.0",
     "eslint": "8.47.0",
     "eslint-config-next": "13.4.19",
     "typescript": "5.1.6"
