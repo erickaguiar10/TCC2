@@ -19,7 +19,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       const wasDisconnected = sessionStorage.getItem('wasDisconnected');
       if (wasDisconnected === 'true') {
         sessionStorage.removeItem('wasDisconnected');
-        return; // Não reconecta automaticamente após desconexão
+        return;
       }
 
       if (window.ethereum) {

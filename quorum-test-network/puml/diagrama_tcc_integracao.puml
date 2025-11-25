@@ -1,0 +1,65 @@
+@startuml
+top to bottom direction
+scale max 900 height
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam componentStyle uml14
+skinparam defaultFontSize 10
+skinparam linetype ortho
+
+title Arquitetura TicketMain - TCC (Parte 2)\nIntegração Frontend-Blockchain
+
+package "Frontend" {
+  [useTicketNFT Hook\n(src/hooks/useTicketNFT.ts)] as HT
+  [TicketNFT ABI\n(src/abis/TicketNFT.json)] as ABI
+}
+
+package "Serviços Externos" {
+  [MetaMask] as MM
+  [Ethers.js] as ETS
+}
+
+package "Blockchain\n(IBFT2 - RPC Node)" {
+  [Nó RPC\n(127.0.0.1:8545)] as RPC
+}
+
+package "Smart Contract\nSolidity\n(dapps/quorumToken/contracts)" {
+  [TicketNFT (ERC-721)\n(TicketNFT.sol)] as SC
+}
+
+HT -down-> ABI : carrega
+HT -down-> ETS : interage
+ETS -down-> RPC : comunica via RPC
+RPC -down-> SC : executa contrato
+MM -down-> ETS : fornece conta
+
+note top of SC
+Contrato NFT:
+- Cria ingressos
+- Compra ingressos
+- Revende ingressos
+- Verifica propriedade
+end note
+
+note top of HT
+Hook personalizado:
+- Conecta ao contrato
+- Gerencia a conta
+- Verifica permissões
+end note
+
+note top of MM
+Carteira:
+- Conecta usuário
+- Assina transações
+- Fornece conta
+end note
+
+note top of RPC
+Nó RPC:
+- Recebe requisições
+- Encaminha à rede
+- Retorna resultados
+end note
+
+@enduml

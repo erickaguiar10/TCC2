@@ -4,7 +4,7 @@
 const nextConfig = {
   reactStrictMode: true,
   env: {
-    NEXT_PUBLIC_TICKETNFT_ADDRESS: process.env.NEXT_PUBLIC_TICKETNFT_ADDRESS,
+    NEXT_PUBLIC_TICKET_NFT_CONTRACT_ADDRESS: process.env.NEXT_PUBLIC_TICKET_NFT_CONTRACT_ADDRESS,
   },
 };
 

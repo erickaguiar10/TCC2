@@ -1,0 +1,34 @@
+@startuml
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam shadowing false
+title Fluxo de Criação de Ingresso
+
+actor Organizador
+participant "Frontend\nReact/Next.js" as FE
+participant "MetaMask" as MM
+participant "Contrato\nTicketNFT.sol" as CT
+participant "Blockchain\n(Besu IBFT)" as BC
+
+Organizador -> FE: Preenche dados do evento
+FE -> FE: (Nome, Preço, Data)
+FE -> FE: Valida dados (formatação de data, etc.)
+FE -> MM: Solicita assinatura da criação
+MM -> Organizador: Solicita confirmação
+Organizador --> MM: Confirma transação
+MM -> CT: Envia transação assinada
+
+CT -> CT: Valida:
+CT -> CT: - Organizador é owner
+CT -> CT: - Data é futura
+CT -> CT: Cria novo token (ID incremental)
+CT -> CT: Configura dados do ingresso
+CT -> CT: (Evento, Preço, Data, Status=Disponível)
+CT -> CT: Mint do NFT para o organizador
+CT -> CT: Adiciona token à lista do usuário
+CT -> BC: Registra criação e emite evento
+
+CT -> FE: Emite evento IngressoCriado
+FE -> FE: Atualiza interface
+FE -> CT: Atualiza listas de ingressos
+@enduml

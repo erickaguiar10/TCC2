@@ -1,0 +1,86 @@
+@startuml
+scale 0.85
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam componentStyle uml14
+skinparam defaultFontSize 10
+skinparam linetype ortho
+
+title Arquitetura TicketMain - TCC (Parte 1)\nFrontend
+
+' ========================
+'  Frontend
+' ========================
+package "Frontend Next.js" {
+  [Home Page (index.tsx)] as Front
+}
+
+' ========================
+'  Componentes
+' ========================
+package "Componentes" {
+  [ResellTicket.tsx] as C3
+  [MyTickets.tsx] as C4
+  [BuyTicket.tsx] as C2
+  [CreateTicket.tsx] as C1
+  [AllTickets.tsx] as C5
+}
+
+' ========================
+'  Contexto / Hooks
+' ========================
+package "Contexto / Hooks" {
+  [TicketContext.tsx] as CT
+  [useTicketNFT Hook] as HT
+  [TicketNFT ABI] as ABI
+}
+
+' --- Fluxo de renderização ---
+Front --> C4 : renderiza
+Front --> C2 : renderiza
+Front --> C1 : renderiza
+Front --> C5 : renderiza
+Front --> C3 : renderiza
+
+' --- Fluxo de uso ---
+C1 --> CT : usa
+C2 --> CT : usa
+C3 --> CT : usa
+C4 --> CT : usa
+C5 --> CT : usa
+
+CT --> HT : usa hook
+HT --> ABI : carrega
+
+' ========================
+'  Notas colocadas sem estourar largura
+' ========================
+note left of C3
+Revenda:
+- Seleciona ingresso
+- Define preço
+- Atualiza status
+end note
+
+note right of C1
+Criação:
+- Tipo
+- Preço
+- Registro
+end note
+
+note right of C2
+Compra:
+- Seleciona
+- Paga
+- Atualiza dono
+end note
+
+note bottom of HT
+Hook:
+- Conecta ao contrato
+- Gerencia conta
+- Verifica permissões
+end note
+
+@enduml

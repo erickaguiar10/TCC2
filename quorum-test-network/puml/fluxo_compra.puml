@@ -1,0 +1,34 @@
+@startuml
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam shadowing false
+title Fluxo Completo de Compra de Ingresso
+
+actor Usuário
+participant "Frontend\nReact/Next.js" as FE
+participant "MetaMask" as MM
+participant "Contrato\nTicketNFT.sol" as CT
+participant "Blockchain\n(Besu IBFT)" as BC
+
+Usuário -> FE: Seleciona ingresso (Token ID)
+FE -> CT: Consulta detalhes do ingresso
+CT -> FE: Retorna informações do ingresso
+FE -> FE: Valida dados e prepara transação
+FE -> MM: Solicita assinatura da compra
+MM -> Usuário: Solicita confirmação (com valor)
+Usuário --> MM: Confirma transação (envia ETH)
+MM -> CT: Envia transação assinada (com valor)
+
+CT -> CT: Valida:
+CT -> CT: - Ticket existe
+CT -> CT: - Status != Vendido
+CT -> CT: - Valor >= preço
+CT -> CT: Atualiza status para Vendido
+CT -> CT: Transfere NFT para o comprador
+CT -> CT: Envia ETH para o vendedor anterior
+CT -> BC: Registra transação e emite evento
+
+CT -> FE: Emite evento IngressoVendido
+FE -> FE: Atualiza interface localmente
+FE -> CT: Atualiza listas de ingressos
+@enduml

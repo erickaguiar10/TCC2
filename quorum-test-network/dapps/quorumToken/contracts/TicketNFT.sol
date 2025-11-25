@@ -19,7 +19,6 @@ contract TicketNFT is ERC721, Ownable {
 
     mapping(uint256 => Ingresso) public ingressos;
     mapping(uint256 => bool) private criado;
-    // Mapping to track tokens per user for gas efficiency
     mapping(address => uint256[]) private tokensPorUsuario;
 
     event IngressoCriado(uint256 indexed tokenId, string evento, uint256 preco);
@@ -33,7 +32,6 @@ contract TicketNFT is ERC721, Ownable {
         uint256 _preco,
         uint256 _dataEvento
     ) external onlyOwner {
-        // Fix: Validate that event date is in the future
         require(_dataEvento > block.timestamp, "Data do evento deve ser futura");
 
         uint256 tokenId = nextTokenId++;
@@ -47,7 +45,6 @@ contract TicketNFT is ERC721, Ownable {
         });
         criado[tokenId] = true;
 
-        // Add token to owner's collection
         tokensPorUsuario[owner()].push(tokenId);
 
         emit IngressoCriado(tokenId, _evento, _preco);
@@ -62,16 +59,12 @@ contract TicketNFT is ERC721, Ownable {
         require(msg.value >= ingresso.preco, "Valor insuficiente");
         require(vendedor != msg.sender, "Voce ja eh dono");
 
-        // Fix: Apply CEI pattern (Checks-Effects-Interactions)
-        // Effects first: Update state before external call
         ingresso.status = Status.Vendido;
         _transfer(vendedor, msg.sender, tokenId);
         
-        // Update token mapping for the new owner
         _removeTokenFromOwner(vendedor, tokenId);
         tokensPorUsuario[msg.sender].push(tokenId);
 
-        // Interactions last: External call after state update
         Address.sendValue(payable(vendedor), msg.value);
 
         emit IngressoVendido(tokenId, msg.sender, ingresso.preco);
@@ -103,7 +96,6 @@ contract TicketNFT is ERC721, Ownable {
     }
 
     function ingressosDoUsuario(address usuario) external view returns (uint256[] memory) {
-        // Fix: Return tokens directly from the user mapping for gas efficiency
         return tokensPorUsuario[usuario];
     }
 
@@ -121,16 +113,13 @@ contract TicketNFT is ERC721, Ownable {
         return tokens;
     }
 
-    // Helper function to remove token from owner's collection
     function _removeTokenFromOwner(address owner, uint256 tokenId) private {
         uint256[] storage tokens = tokensPorUsuario[owner];
         uint256 len = tokens.length;
         
         for (uint256 i = 0; i < len; i++) {
             if (tokens[i] == tokenId) {
-                // Move last element to current position
                 tokens[i] = tokens[len - 1];
-                // Remove last element
                 tokens.pop();
                 break;
             }

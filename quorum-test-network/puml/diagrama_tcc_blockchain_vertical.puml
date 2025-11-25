@@ -1,0 +1,67 @@
+@startuml
+top to bottom direction
+scale max 900 height
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam componentStyle uml14
+skinparam defaultFontSize 10
+skinparam linetype ortho
+
+title Arquitetura TicketMain - TCC (Parte 3)\nInfraestrutura Blockchain
+
+package "Smart Contract\nSolidity\n(dapps/quorumToken/contracts)" {
+  [TicketNFT (ERC-721)\n(TicketNFT.sol)] as SC
+}
+
+package "Rede Blockchain\nBesu - IBFT2" {
+  [Nó 1\n(Validador)] as N1
+  [Nó 2\n(Validador)] as N2
+  [Nó 3\n(Validador)] as N3
+  [Nó 4\n(Validador)] as N4
+}
+
+package "Nó RPC\n(127.0.0.1:8545)" {
+  [Nó RPC] as RPC
+}
+
+package "Serviços Externos" {
+  [Ethers.js] as ETS
+}
+
+ETS -down-> RPC : comunica via RPC
+RPC -down-> SC : executa contrato
+SC -down-> N1 : replicado
+SC -down-> N2 : replicado
+SC -down-> N3 : replicado
+SC -down-> N4 : replicado
+
+note top of SC
+Contrato NFT:
+- Cria ingressos
+- Compra ingressos
+- Revende ingressos
+- Verifica propriedade
+end note
+
+note top of RPC
+Nó RPC:
+- Fornece endpoint
+- Encaminha transações
+- Comunica com nós
+end note
+
+note top of N1
+Nó Validador:
+- Valida transações
+- Participa do consenso
+- Mantém blockchain
+end note
+
+note top of ETS
+Biblioteca:
+- Conecta à blockchain
+- Interage com contratos
+- Envia transações
+end note
+
+@enduml

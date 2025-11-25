@@ -1,0 +1,48 @@
+@startuml
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam shadowing false
+title Fluxo Completo de Revenda de Ingresso
+
+actor Proprietário
+participant "Frontend\nReact/Next.js" as FE
+participant "MetaMask" as MM
+participant "Contrato\nTicketNFT.sol" as CT
+participant "Blockchain\n(Besu IBFT)" as BC
+
+Proprietário -> FE: Seleciona ingresso (Token ID) para revenda
+FE -> FE: Valida posse do ingresso
+FE -> MM: Solicita assinatura da revenda
+MM -> Proprietário: Confirmação da transação
+Proprietário --> MM: Aceita
+MM -> CT: Envia transação (Token ID, Novo Preço)
+
+CT -> CT: Valida:
+CT -> CT: - Ticket existe
+CT -> CT: - Proprietário é dono
+CT -> CT: Atualiza preço e status para Revenda
+CT -> BC: Registra atualização e emite evento
+
+CT -> FE: Emite evento IngressoRevenda
+FE -> FE: Atualiza interface
+
+note over FE, CT
+  Agora o ingresso aparece na lista 
+  de ingressos disponíveis para compra
+end note
+
+== Nova compra do ingresso revendido ==
+actor Comprador
+
+Comprador -> FE: Seleciona ingresso revendido (Token ID)
+FE -> MM: Solicita assinatura da compra (com valor)
+MM -> CT: Envia transação assinada (com ETH)
+
+CT -> CT: Processa pagamento e valida ingresso
+CT -> CT: Transfere NFT ao novo comprador
+CT -> CT: Envia pagamento ao antigo dono
+CT -> BC: Registra revenda
+
+CT -> FE: Emite evento IngressoVendido
+FE -> FE: Atualiza interfaces
+@enduml

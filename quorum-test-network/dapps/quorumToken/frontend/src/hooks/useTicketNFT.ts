@@ -5,7 +5,6 @@ import { ethers } from "ethers";
 import TicketNFTJson from "../abis/TicketNFT.json";
 
 const abi = TicketNFTJson.abi;
-const contractAddress = "0x9a3DBCa554e9f6b9257aAa24010DA8377C57c17e";
 
 export const useTicketNFT = () => {
   const [ticketContract, setTicketContract] = useState<ethers.Contract | null>(null);
@@ -17,6 +16,19 @@ export const useTicketNFT = () => {
   const refreshContract = useCallback(async () => {
     if (typeof window !== "undefined" && window.ethereum) {
       try {
+        // Get contract address from environment variables with fallback
+        const contractAddress = process.env.NEXT_PUBLIC_TICKETNFT_ADDRESS || process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+
+        // Validate contract address
+        if (!contractAddress) {
+          throw new Error("Contract address not configured. Please set NEXT_PUBLIC_TICKETNFT_ADDRESS in your environment variables.");
+        }
+
+        // Validate contract address format
+        if (!ethers.isAddress(contractAddress)) {
+          throw new Error(`Invalid contract address: ${contractAddress}`);
+        }
+
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
         const userAccount = await signer.getAddress();
