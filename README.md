@@ -4,7 +4,6 @@
 
 [![Solidity](https://img.shields.io/badge/Solidity-^0.8.20-brightgreen)](https://soliditylang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-green)](https://nodejs.org/)
-[![License](https://img.shields.io/badge/License-MIT-blue)](./LICENSE)
 
 </div>
 
@@ -22,8 +21,8 @@
 
 ### Telas da Aplicação
 <div style="display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap;">
-  <img src="./images/Front1.png" alt="Tela de Conexão" width="400">
-  <img src="./images/Front2.png" alt="Tela de Compra" width="400">
+<img src="https://res.cloudinary.com/dzkmdtthg/image/upload/v1764282872/Front1_gxksjr.png" width="400">
+<img src="https://res.cloudinary.com/dzkmdtthg/image/upload/v1764282872/Front2_qjzwxi.png" width="400">
 </div>
 
 
@@ -45,9 +44,10 @@
 <div align="center">
 
 ### Arquitetura em Camadas
-<img src="./out/quorum-test-network/diagrama_tcc_frontend_vertical/diagrama_tcc_frontend_vertical.png" alt="Arquitetura FrontEnd" width="300">
-<img src="./out/quorum-test-network/diagrama_tcc_integracao/diagrama_tcc_integracao.png" alt="Camada de Integração" width="300">
-<img src="./out/quorum-test-network/diagrama_tcc_blockchain_vertical/diagrama_tcc_blockchain_vertical.png" alt="Arquitetura Blockchain" width="300">
+<img src="https://res.cloudinary.com/dzkmdtthg/image/upload/v1764210159/diagrama_tcc_frontend_vertical_p4dvnb.png" alt="Arquitetura FrontEnd" width="300">
+<img src="https://res.cloudinary.com/dzkmdtthg/image/upload/v1764210159/diagrama_tcc_integracao_tvsfza.png" alt="Camada de Integração" width="300">
+<img src="https://res.cloudinary.com/dzkmdtthg/image/upload/v1764210159/diagrama_tcc_blockchain_vertical_dz9g1p.png" alt="Arquitetura Blockchain" width="300">
+
 
 
 </div>
@@ -185,11 +185,12 @@ O sistema é organizado em quatro camadas principais:
 ### Fluxos de Negócio
 <div style="display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap;">
 
-[<img src="./out/quorum-test-network/fluxo_compra/fluxo_compra.png" alt="Fluxo de Compra" width="250">](./out/quorum-test-network/fluxo_compra/fluxo_compra.png)
+[<img src="https://res.cloudinary.com/dzkmdtthg/image/upload/v1764210159/fluxo_compra_z2x4w3.png" alt="Fluxo de Compra" width="250">](https://res.cloudinary.com/dzkmdtthg/image/upload/v1764210159/fluxo_compra_z2x4w3.png)
 
-[<img src="./out/quorum-test-network/fluxo_revenda/fluxo_revenda.png" alt="Fluxo de Revenda" width="250">](./out/quorum-test-network/fluxo_revenda/fluxo_revenda.png)
+[<img src="https://res.cloudinary.com/dzkmdtthg/image/upload/v1764210159/fluxo_revenda_acgbps.png" alt="Fluxo de Revenda" width="250">](https://res.cloudinary.com/dzkmdtthg/image/upload/v1764210159/fluxo_revenda_acgbps.png)
 
-[<img src="./out/quorum-test-network/fluxo_criacao/fluxo_criacao.png" alt="Fluxo de Criação" width="250">](./out/quorum-test-network/fluxo_criacao/fluxo_criacao.png)
+[<img src="https://res.cloudinary.com/dzkmdtthg/image/upload/v1764210159/fluxo_criacao_ytcdaa.png" alt="Fluxo de Criação" width="250">](https://res.cloudinary.com/dzkmdtthg/image/upload/v1764210159/fluxo_criacao_ytcdaa.png)
+
 
 </div>
 
