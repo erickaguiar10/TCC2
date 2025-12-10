@@ -36,10 +36,20 @@ export function CreateTicket() {
     if (contract && account) {
       try {
         setIsLoading(true);
+        // Parse the date string and ensure it represents the full day in UTC
+        const dateParts = dataEvento.split('-');
+        const year = parseInt(dateParts[0]);
+        const month = parseInt(dateParts[1]) - 1; // Month is 0-indexed in JavaScript
+        const day = parseInt(dateParts[2]);
+
+        // Create a date object representing the start of the day in UTC
+        const eventDate = new Date(Date.UTC(year, month, day));
+        const timestamp = Math.floor(eventDate.getTime() / 1000);
+
         const tx = await contract.criarIngresso(
           evento,
           ethers.parseEther(preco || "0"),
-          Math.floor(new Date(dataEvento).getTime() / 1000)
+          timestamp
         );
         await tx.wait();
 

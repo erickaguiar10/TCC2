@@ -38,8 +38,12 @@ export const TicketProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         const tickets = await Promise.all(
           ids.map(async (tokenId: any) => {
             const ingresso = await contract.ingressos(tokenId);
+            // Convert timestamp to date, ensuring it represents the intended date
+            // Unix timestamps are in UTC, so we should format consistently
             const dataEvento = new Date(Number(ingresso.dataEvento) * 1000);
-            const dataFormatada = dataEvento.toLocaleDateString("pt-BR");
+            const dataFormatada = dataEvento.toLocaleDateString("pt-BR", {
+              timeZone: "UTC"
+            });
 
             return {
               id: tokenId.toString(),
@@ -72,8 +76,12 @@ export const TicketProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         const ingresso = await contract.ingressos(tokenId);
         const dono = await contract.ownerOf(tokenId);
 
+        // Convert timestamp to date, ensuring it represents the intended date
+        // Unix timestamps are in UTC, so we should format consistently
         const dataEvento = new Date(Number(ingresso.dataEvento) * 1000);
-        const dataFormatada = dataEvento.toLocaleDateString("pt-BR");
+        const dataFormatada = dataEvento.toLocaleDateString("pt-BR", {
+          timeZone: "UTC"
+        });
 
         return {
           id: tokenId.toString(),

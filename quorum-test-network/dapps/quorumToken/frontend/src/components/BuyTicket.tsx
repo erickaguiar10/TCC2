@@ -75,7 +75,9 @@ export function BuyTicket() {
 
           // Obter informações do ticket para exibir
           const dataEvento = new Date(Number(ingresso.dataEvento) * 1000);
-          const dataFormatada = dataEvento.toLocaleDateString("pt-BR");
+          const dataFormatada = dataEvento.toLocaleDateString("pt-BR", {
+            timeZone: "UTC"
+          });
           const dono = await contract.ownerOf(Number(tokenId));
 
           setTicketInfo({
