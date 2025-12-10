@@ -12,7 +12,7 @@
 ## 🚀 Demonstração
 
 <div align="center">
-  <img src="./images/ProjetoTCC.gif" alt="Demonstração do sistema" width="800">
+  <img src="./images/gifCriar.gif" alt="Demonstração do sistema" width="800">
 </div>
 
 ## ✨ Destaques
